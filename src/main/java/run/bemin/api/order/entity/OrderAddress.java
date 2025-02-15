@@ -17,7 +17,7 @@ public class OrderAddress {
   private String roadAddress; // 도로명 주소
   private String detailAddress; // 상세주소
 
-  /*
+  /**
    * 주소 입력에 대한 유효성 검사
    */
   public static OrderAddress of(String bcode, String jibunAddress, String roadAddress, String detailAddress) {
@@ -27,4 +27,6 @@ public class OrderAddress {
     }
     return new OrderAddress(bcode, jibunAddress, roadAddress, detailAddress);
   }
+
+
 }

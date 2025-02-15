@@ -5,8 +5,6 @@ import lombok.Getter;
 @Getter
 public enum OrderStatus {
   CANCELLED(0, "주문취소"),
-  DELIVERY_ORDER(1, "배달주문"),
-  TAKEOUT_ORDER(2, "포장주문"),
   PENDING(10, "주문확인중"),
   COOKING(11, "조리중"),
   OUT_FOR_DELIVERY(20, "배달중"),

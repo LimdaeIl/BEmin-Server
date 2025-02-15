@@ -16,11 +16,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -72,13 +70,37 @@ public class Order {
     }
   }
 
-  // 빌더 클래스 커스터마이징
-  // store 설정 시 storeName 자동 설정
+  /**
+   * 빌더 클래스 커스터마이징, store 설정 시 storeName 자동 설정
+   */
   public static class OrderBuilder {
     public OrderBuilder store(Store store) {
       this.store = store;
       this.storeName = store != null ? store.getStoreName() : null;
       return this;
     }
+  }
+
+  public void changeOrderAddress(OrderAddress newAddress) {
+    if (newAddress == null) {
+      throw new IllegalArgumentException("Order address cannot be null");
+    }
+    this.orderAddress = newAddress;
+  }
+
+  public void changeOrderStatus(OrderStatus newStatus) {
+    if (newStatus == null) {
+      throw new IllegalArgumentException("Order status cannot be null");
+    }
+    this.orderStatus = newStatus;
+  }
+
+  public void changeRiderTel(String newTel) {
+    this.riderTel = newTel;
+  }
+
+  public void cancelOrder() {
+    this.cancelled = true;
+    this.orderStatus = OrderStatus.CANCELLED;
   }
 }
