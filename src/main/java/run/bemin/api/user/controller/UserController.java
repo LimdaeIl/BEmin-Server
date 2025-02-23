@@ -26,6 +26,7 @@ import run.bemin.api.user.dto.UserAddressRequestDto;
 import run.bemin.api.user.dto.UserAddressResponseDto;
 import run.bemin.api.user.dto.UserResponseDto;
 import run.bemin.api.user.dto.UserUpdateRequestDto;
+import run.bemin.api.user.entity.UserRoleEnum;
 import run.bemin.api.user.exception.UserUnauthorizedException;
 import run.bemin.api.user.service.UserAddressService;
 import run.bemin.api.user.service.UserService;
@@ -47,14 +48,16 @@ public class UserController {
   public ResponseEntity<ApiResponse<Page<UserResponseDto>>> getAllUsers(
       @RequestParam(value = "page", defaultValue = "0") Integer page,
       @RequestParam(value = "size", defaultValue = "10") Integer size,
-      @RequestParam(value = "isDeleted", required = false) Boolean isDeleted
+      @RequestParam(value = "isDeleted", required = false) Boolean isDeleted,
+      @RequestParam(value = "role", required = false) UserRoleEnum role
   ) {
     Page<UserResponseDto> users = userService.getAllUsers(
         isDeleted,
         page,
         size,
         "createdAt",
-        true
+        true,
+        role
     );
     return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "성공", users));
   }
