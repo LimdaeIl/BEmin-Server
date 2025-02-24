@@ -25,6 +25,8 @@ import run.bemin.api.review.dto.ReviewUpdateRequestDto;
 import run.bemin.api.review.dto.ReviewUpdateResponseDto;
 import run.bemin.api.review.entity.Review;
 import run.bemin.api.review.exception.ReviewException;
+import run.bemin.api.review.messaging.ReviewEvent;
+import run.bemin.api.review.messaging.ReviewProducer;
 import run.bemin.api.review.repository.ReviewRepository;
 import run.bemin.api.store.entity.Store;
 import run.bemin.api.store.repository.StoreRepository;
@@ -41,6 +43,7 @@ public class ReviewService {
   private final OrderRepository orderRepository;
   private final StoreRepository storeRepository;
   private final UserRepository userRepository;
+  private final ReviewProducer reviewProducer;
   private final JwtUtil jwtUtil;
 
   // 토큰 추출하기
@@ -55,11 +58,8 @@ public class ReviewService {
 
   // order 찾기
   private Order getOrder(UUID orderId) {
-    log.info("조회하려는 orderId : {}", orderId);
     Order order = orderRepository.findById(orderId)
         .orElseThrow(() -> new ReviewException(ErrorCode.ORDER_NOT_FOUND));
-
-    log.info("조회하려는 orderId의 order status : {}", order.getOrderStatus());
     return order;
   }
 
@@ -149,6 +149,13 @@ public class ReviewService {
 
     reviewRepository.save(review);
 
+    // 평균 평점 계산
+    double newAvgRating = reviewRepository.findAverageRatingByStore(review.getStore().getId());
+
+    // RabbitMQ로 store 평점 갱신하기
+    ReviewEvent event = new ReviewEvent(review.getStore().getId(), newAvgRating);
+    reviewProducer.sendReviewEvent(event);
+
     return ReviewCreateResponseDto.from(review);
   }
 
@@ -194,6 +201,13 @@ public class ReviewService {
 
     review.deleteReview(userEmail);
 
+    // 평균 평점 계산
+    double newAvgRating = reviewRepository.findAverageRatingByStore(review.getStore().getId());
+
+    // RabbitMQ로 store 평점 갱신하기
+    ReviewEvent event = new ReviewEvent(review.getStore().getId(), newAvgRating);
+    reviewProducer.sendReviewEvent(event);
+
     return ReviewDeleteResponseDto.from(review);
   }
 
@@ -201,7 +215,6 @@ public class ReviewService {
   @Transactional
   public Double getAvgRatingByStore(UUID storeId) {
     double avg = reviewRepository.findAverageRatingByStore(storeId);
-    log.info("avg : {}", avg);
     return avg;
   }
 }

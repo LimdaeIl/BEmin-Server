@@ -63,7 +63,8 @@ dependencies {
     // Hibernate6 모듈 추가 (Hibernate 6 lazy 프록시 직렬화 오류 방지) - 공희진 2/22
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate6:2.18.2'
 
-
+    // RabbitMQ를 사용하기 위한 Spring AMQP
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
 }
 
 tasks.named('test') {
