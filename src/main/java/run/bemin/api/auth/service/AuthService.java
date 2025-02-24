@@ -1,11 +1,14 @@
 package run.bemin.api.auth.service;
 
 import jakarta.validation.Valid;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,10 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import run.bemin.api.auth.dto.EmailCheckResponseDto;
 import run.bemin.api.auth.dto.NicknameCheckResponseDto;
-import run.bemin.api.auth.dto.SigninResponseDto;
 import run.bemin.api.auth.dto.SignupRequestDto;
 import run.bemin.api.auth.dto.SignupResponseDto;
-import run.bemin.api.auth.exception.SigninUnauthorizedException;
+import run.bemin.api.auth.dto.TokenDto;
 import run.bemin.api.auth.exception.SignupDuplicateEmailException;
 import run.bemin.api.auth.exception.SignupDuplicateNicknameException;
 import run.bemin.api.auth.exception.SignupInvalidEmailFormatException;
@@ -28,6 +30,7 @@ import run.bemin.api.security.UserDetailsImpl;
 import run.bemin.api.user.dto.UserAddressDto;
 import run.bemin.api.user.entity.User;
 import run.bemin.api.user.entity.UserAddress;
+import run.bemin.api.user.entity.UserRoleEnum;
 import run.bemin.api.user.repository.UserAddressRepository;
 
 @Service
@@ -39,6 +42,7 @@ public class AuthService {
   private final AuthenticationManager authenticationManager;
   private final JwtUtil jwtUtil;
   private final UserAddressRepository userAddressRepository;
+  private final RedisTemplate<String, Object> redisTemplate;
 
   @Transactional
   public SignupResponseDto signup(@Valid SignupRequestDto requestDto) {
@@ -136,22 +140,109 @@ public class AuthService {
     }
   }
 
+  /**
+   * 로그인 메서드 - 인증 후 JWT Access Token, Refresh Token 발급 - Refresh Token은 Redis에 "RT:{userEmail}" 키로 저장 (TTL: Refresh
+   * Token 만료 시간) - 로그인 정보를 캐시에 저장 (예: 캐시 이름 "LOGIN_USER")
+   */
+  @CachePut(cacheNames = "LOGIN_USER", key = "'login:' + #userEmail")
+  @Transactional
+  public TokenDto signin(String userEmail, String password) {
+    // 인증 처리
+    Authentication authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(userEmail, password)
+    );
 
-  @Transactional(readOnly = true)
-  public SigninResponseDto signin(String userEmail, String password) {
-    try {
-      Authentication authentication = authenticationManager.authenticate(
-          new UsernamePasswordAuthenticationToken(userEmail, password)
-      );
+    // 인증된 사용자 정보 추출
+    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    UserRoleEnum role = userDetails.getRole();
 
-      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-      String authToken = jwtUtil.createAccessToken(userDetails.getUsername(), userDetails.getRole());
-      return new SigninResponseDto(authToken, userDetails.getUsername(), userDetails.getNickname(),
-          userDetails.getRole());
+    // Access Token과 Refresh Token 생성
+    String accessToken = jwtUtil.createAccessToken(userEmail, role);
+    String refreshToken = jwtUtil.createRefreshToken(userEmail);
 
-    } catch (BadCredentialsException e) {
-      throw new SigninUnauthorizedException(ErrorCode.SIGNIN_UNAUTHORIZED_USER.getMessage());
+    // TokenDto에 토큰 및 만료시간 정보를 담아서 생성
+    TokenDto tokenDto = new TokenDto(
+        accessToken,
+        refreshToken,
+        jwtUtil.getAccessTokenExpiration(),
+        jwtUtil.getRefreshTokenExpiration(),
+        userEmail,
+        userDetails.getNickname(),
+        role
+    );
+
+    // Redis에 Refresh Token 저장 (예: key "RT:user@example.com")
+    redisTemplate.opsForValue()
+        .set("RT:" + userEmail, refreshToken, tokenDto.getRefreshTokenExpiresTime(), TimeUnit.MILLISECONDS);
+    log.info("Refresh Token stored in Redis: key=RT:{} , token={}", userEmail, refreshToken);
+
+    // TokenDto 반환
+    return tokenDto;
+  }
+
+  @Transactional
+  public TokenDto refresh(String refreshToken) {
+    // refresh 토큰은 쿠키에서 전달받은 값이고, JwtUtil.createRefreshToken()에서 생성된 값은 "Bearer ..." 형식입니다.
+    // 검증을 위해 Bearer 접두어를 제거한 순수 토큰을 사용합니다.
+    String pureToken = refreshToken;
+    if (pureToken.startsWith(JwtUtil.BEARER_PREFIX)) {
+      pureToken = pureToken.substring(JwtUtil.BEARER_PREFIX.length());
     }
+
+    // refresh 토큰 검증 (순수 토큰으로 검증)
+    if (!jwtUtil.validateToken(pureToken)) {
+      throw new RuntimeException("유효하지 않거나 만료된 Refresh Token 입니다.");
+    }
+
+    // 토큰에서 사용자 이메일 추출 (순수 토큰 사용)
+    String userEmail = jwtUtil.getUserEmailFromToken(pureToken);
+
+    // Redis에 저장된 refresh 토큰 조회 (저장할 때는 "Bearer ..." 형식 그대로 저장)
+    String storedRefreshToken = (String) redisTemplate.opsForValue().get("RT:" + userEmail);
+    if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
+      throw new RuntimeException("저장된 Refresh Token과 일치하지 않거나 만료되었습니다.");
+    }
+
+    // 사용자 정보 조회
+    User user = authRepository.findByUserEmail(userEmail)
+        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+    // 새 Access Token 생성
+    String newAccessToken = jwtUtil.createAccessToken(userEmail, user.getRole());
+
+    // 새 Refresh Token 발급 후 Redis 업데이트
+    String newRefreshToken = jwtUtil.createRefreshToken(userEmail);
+    redisTemplate.opsForValue()
+        .set("RT:" + userEmail, newRefreshToken, jwtUtil.getRefreshTokenExpiration(), TimeUnit.MILLISECONDS);
+
+    // TokenDto에 모든 정보 포함하여 반환
+    return new TokenDto(
+        newAccessToken,
+        newRefreshToken,
+        jwtUtil.getAccessTokenExpiration(),
+        jwtUtil.getRefreshTokenExpiration(),
+        userEmail,
+        user.getNickname(),
+        user.getRole()
+    );
+  }
+
+
+  /**
+   * 로그아웃 메서드 - Redis에 저장된 Refresh Token 삭제 - 현재 사용 중인 Access Token을 블랙리스트로 등록 (남은 유효시간을 TTL로 설정) - 로그인 캐시도 삭제
+   * (@CacheEvict)
+   */
+  @CacheEvict(cacheNames = "LOGIN_USER", key = "'login:' + #userEmail")
+  @Transactional
+  public void signout(String accessToken, String userEmail) {
+    // 1. Redis에서 해당 사용자의 Refresh Token 삭제 (키 예: "RT:user@example.com")
+    redisTemplate.delete("RT:" + userEmail);
+
+    // 2. Access Token의 남은 유효시간 계산 (jwtUtil에 구현된 메서드 사용)
+    long remainingTime = jwtUtil.getRemainingExpirationTime(accessToken);
+
+    // 3. Access Token을 블랙리스트에 등록 (키: accessToken, 값: "logout", TTL: 남은 유효시간)
+    redisTemplate.opsForValue().set(accessToken, "logout", remainingTime, TimeUnit.MILLISECONDS);
   }
 
 }
