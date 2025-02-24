@@ -12,6 +12,7 @@ import run.bemin.api.general.exception.ErrorCode;
 import run.bemin.api.user.dto.UserResponseDto;
 import run.bemin.api.user.dto.UserUpdateRequestDto;
 import run.bemin.api.user.entity.User;
+import run.bemin.api.user.entity.UserRoleEnum;
 import run.bemin.api.user.exception.UserDuplicateNicknameException;
 import run.bemin.api.user.exception.UserListNotFoundException;
 import run.bemin.api.user.exception.UserNoFieldUpdatedException;
@@ -34,16 +35,25 @@ public class UserService {
                                            Integer page,
                                            Integer size,
                                            String sortBy,
-                                           Boolean isAsc) {
+                                           Boolean isAsc,
+                                           UserRoleEnum role) {
     Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
     Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
     Page<User> userPage;
     try {
       if (isDeleted == null) {
-        userPage = userRepository.findAll(pageable);
+        if (role == null) {
+          userPage = userRepository.findAll(pageable);
+        } else {
+          userPage = userRepository.findByRole(role, pageable);
+        }
       } else {
-        userPage = userRepository.findByIsDeleted(isDeleted, pageable);
+        if (role == null) {
+          userPage = userRepository.findByIsDeleted(isDeleted, pageable);
+        } else {
+          userPage = userRepository.findByIsDeletedAndRole(isDeleted, role, pageable);
+        }
       }
     } catch (Exception e) {
       throw new UserRetrievalFailedException(ErrorCode.USER_RETRIEVAL_FAILED.getMessage());
@@ -55,7 +65,6 @@ public class UserService {
 
     return userPage.map(UserResponseDto::fromEntity);
   }
-
 
   /**
    * 특정 회원 조회

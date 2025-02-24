@@ -31,10 +31,11 @@ public class JwtUtil {
   public static final String AUTHORIZATION_KEY = "auth";
   // Token 식별자
   public static final String BEARER_PREFIX = "Bearer ";
-  // AccessToken 만료시간 - 1일
-  private final long ACCESS_TOKEN_TIME = 24 * 60 * 60 * 1000L;
-  // RefreshToken 만료시간 - 3분
-  private final long REFRESHTOKEN_TIME = 3 * 60 * 1000L;
+  // AccessToken 만료시간 60분
+  private final long ACCESS_TOKEN_TIME = 10 * 60 * 60 * 1000L;
+  // RefreshToken 만료시간 - 24시간
+  private final long REFRESHTOKEN_TIME = 24 * 60 * 60 * 1000L;
+
 
   @Value("${jwt.secret.key}") // Base64 Encode 한 SecretKey
   public String secretKey; // JwtUtilTokenTest로 인해 public으로 변경했습니다.
@@ -117,4 +118,23 @@ public class JwtUtil {
     Claims claims = getUserInfoFromToken(token);
     return claims.getSubject();
   }
+
+  public long getAccessTokenExpiration() {
+    return ACCESS_TOKEN_TIME; // 예: 24시간
+  }
+
+  public long getRefreshTokenExpiration() {
+    return REFRESHTOKEN_TIME; // 예: 3분 (또는 원하는 시간)
+  }
+
+  public long getRemainingExpirationTime(String token) {
+    // 토큰의 만료 시간을 가져오기
+    Claims claims = getUserInfoFromToken(token);
+    Date expiration = claims.getExpiration();
+    // 현재 시간과 비교하여 남은 시간을 계산 (밀리초 단위)
+    long remainingTime = expiration.getTime() - System.currentTimeMillis();
+    return remainingTime > 0 ? remainingTime : 0;
+  }
+
+
 }

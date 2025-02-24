@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,8 @@ import run.bemin.api.general.auditing.AuditableEntity;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Entity(name = "p_user_address")
 public class UserAddress extends AuditableEntity {
 
@@ -40,6 +43,7 @@ public class UserAddress extends AuditableEntity {
   private String detail;
 
   // 대표 주소 여부 플래그
+  @Builder.Default
   @Column(name = "is_representative", nullable = false)
   private Boolean isRepresentative = false;
 
@@ -48,6 +52,7 @@ public class UserAddress extends AuditableEntity {
   @JsonBackReference // User의 userAddressList에 대한 역참조를 무시
   private User user;
 
+  @Builder.Default
   @Column(name = "is_deleted", nullable = false)
   private Boolean isDeleted = false;
 

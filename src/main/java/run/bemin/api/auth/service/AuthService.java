@@ -1,9 +1,13 @@
 package run.bemin.api.auth.service;
 
 import jakarta.validation.Valid;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,9 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import run.bemin.api.auth.dto.EmailCheckResponseDto;
 import run.bemin.api.auth.dto.NicknameCheckResponseDto;
-import run.bemin.api.auth.dto.SigninResponseDto;
 import run.bemin.api.auth.dto.SignupRequestDto;
 import run.bemin.api.auth.dto.SignupResponseDto;
+import run.bemin.api.auth.dto.TokenDto;
+import run.bemin.api.auth.exception.RefreshTokenInvalidException;
+import run.bemin.api.auth.exception.RefreshTokenMismatchException;
 import run.bemin.api.auth.exception.SigninUnauthorizedException;
 import run.bemin.api.auth.exception.SignupDuplicateEmailException;
 import run.bemin.api.auth.exception.SignupDuplicateNicknameException;
@@ -28,6 +34,8 @@ import run.bemin.api.security.UserDetailsImpl;
 import run.bemin.api.user.dto.UserAddressDto;
 import run.bemin.api.user.entity.User;
 import run.bemin.api.user.entity.UserAddress;
+import run.bemin.api.user.entity.UserRoleEnum;
+import run.bemin.api.user.exception.UserNotFoundException;
 import run.bemin.api.user.repository.UserAddressRepository;
 
 @Service
@@ -39,6 +47,7 @@ public class AuthService {
   private final AuthenticationManager authenticationManager;
   private final JwtUtil jwtUtil;
   private final UserAddressRepository userAddressRepository;
+  private final RedisTemplate<String, Object> redisTemplate;
 
   @Transactional
   public SignupResponseDto signup(@Valid SignupRequestDto requestDto) {
@@ -136,22 +145,101 @@ public class AuthService {
     }
   }
 
-
-  @Transactional(readOnly = true)
-  public SigninResponseDto signin(String userEmail, String password) {
+  /**
+   * 로그인 메서드
+   */
+  @CachePut(cacheNames = "LOGIN_USER", key = "'login:' + #userEmail")
+  @Transactional
+  public TokenDto signin(String userEmail, String password) {
+    Authentication authentication;
     try {
-      Authentication authentication = authenticationManager.authenticate(
+      authentication = authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(userEmail, password)
       );
-
-      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-      String authToken = jwtUtil.createAccessToken(userDetails.getUsername(), userDetails.getRole());
-      return new SigninResponseDto(authToken, userDetails.getUsername(), userDetails.getNickname(),
-          userDetails.getRole());
-
     } catch (BadCredentialsException e) {
       throw new SigninUnauthorizedException(ErrorCode.SIGNIN_UNAUTHORIZED_USER.getMessage());
     }
+
+    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+    UserRoleEnum role = userDetails.getRole();
+
+    String accessToken = jwtUtil.createAccessToken(userEmail, role);
+    String refreshToken = jwtUtil.createRefreshToken(userEmail);
+
+    TokenDto tokenDto = new TokenDto(
+        accessToken,
+        refreshToken,
+        jwtUtil.getAccessTokenExpiration(),
+        jwtUtil.getRefreshTokenExpiration(),
+        userEmail,
+        userDetails.getNickname(),
+        role
+    );
+
+    // Redis에 Refresh Token 저장
+    redisTemplate.opsForValue()
+        .set("RT:" + userEmail, refreshToken, tokenDto.getRefreshTokenExpiresTime(), TimeUnit.MILLISECONDS);
+    log.info("Refresh Token stored in Redis: key=RT:{} , token={}", userEmail, refreshToken);
+
+    return tokenDto;
+  }
+
+  @Transactional
+  public TokenDto refresh(String refreshToken) {
+
+    String pureToken = refreshToken;
+    if (pureToken.startsWith(JwtUtil.BEARER_PREFIX)) {
+      pureToken = pureToken.substring(JwtUtil.BEARER_PREFIX.length());
+    }
+
+    if (!jwtUtil.validateToken(pureToken)) {
+      throw new RefreshTokenInvalidException(ErrorCode.AUTH_REFRESH_TOKEN_INVALID.getMessage());
+    }
+
+    String userEmail = jwtUtil.getUserEmailFromToken(pureToken);
+
+    String storedRefreshToken = (String) redisTemplate.opsForValue().get("RT:" + userEmail);
+    if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
+      throw new RefreshTokenMismatchException(ErrorCode.AUTH_REFRESH_TOKEN_MISMATCH.getMessage());
+    }
+
+    User user = authRepository.findByUserEmail(userEmail)
+        .orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
+
+    String newAccessToken = jwtUtil.createAccessToken(userEmail, user.getRole());
+
+    // 새 Refresh Token 발급 후 Redis 업데이트
+    String newRefreshToken = jwtUtil.createRefreshToken(userEmail);
+    redisTemplate.opsForValue()
+        .set("RT:" + userEmail, newRefreshToken, jwtUtil.getRefreshTokenExpiration(), TimeUnit.MILLISECONDS);
+
+    return new TokenDto(
+        newAccessToken,
+        newRefreshToken,
+        jwtUtil.getAccessTokenExpiration(),
+        jwtUtil.getRefreshTokenExpiration(),
+        userEmail,
+        user.getNickname(),
+        user.getRole()
+    );
+  }
+
+
+  /**
+   * 로그아웃 메서드 - Redis에 저장된 Refresh Token 삭제 - 현재 사용 중인 Access Token을 블랙리스트로 등록 (남은 유효시간을 TTL로 설정) - 로그인 캐시도 삭제
+   * (@CacheEvict)
+   */
+  @CacheEvict(cacheNames = "LOGIN_USER", key = "'login:' + #userEmail")
+  @Transactional
+  public void signout(String accessToken, String userEmail) {
+
+    redisTemplate.delete("RT:" + userEmail);
+
+    // Access Token의 남은 유효시간 계산
+    long remainingTime = jwtUtil.getRemainingExpirationTime(accessToken);
+
+    // Access Token을 블랙리스트에 등록
+    redisTemplate.opsForValue().set(accessToken, "logout", remainingTime, TimeUnit.MILLISECONDS);
   }
 
 }

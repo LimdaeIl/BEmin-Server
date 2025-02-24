@@ -1,6 +1,8 @@
 package run.bemin.api.auth.controller;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -12,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,12 +23,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import run.bemin.api.auth.dto.SigninRequestDto;
-import run.bemin.api.auth.dto.SigninResponseDto;
+import run.bemin.api.auth.dto.TokenDto;
 import run.bemin.api.auth.jwt.JwtUtil;
 import run.bemin.api.auth.service.AuthService;
 import run.bemin.api.config.MockConfig;
@@ -34,6 +38,7 @@ import run.bemin.api.config.WebSecurityConfig;
 import run.bemin.api.security.UserDetailsImpl;
 import run.bemin.api.user.entity.User;
 import run.bemin.api.user.entity.UserRoleEnum;
+
 
 @WebMvcTest(
     controllers = AuthSessionController.class,
@@ -53,7 +58,15 @@ class AuthSessionControllerTest {
   @Autowired
   private ObjectMapper objectMapper;
 
+  @Autowired
   private MockMvc mockMvc;
+
+  @Autowired
+  private JwtUtil jwtUtil;
+
+  @Autowired
+  private RedisTemplate<String, Object> redisTemplate;
+  ;
 
   @Autowired
   private AuthService authService;
@@ -70,32 +83,29 @@ class AuthSessionControllerTest {
   void signinSuccessTest() throws Exception {
     // Given
     SigninRequestDto requestDto = SigninRequestDto.builder()
-        .userEmail("test@gmail.com")
-        .password("test1234")
+        .userEmail("user1@gmail.com")
+        .password("user1234")
         .build();
 
-    SigninResponseDto responseDto = new SigninResponseDto(
-        "testToken",
-        "test@gmail.com",
-        "testUser",
-        UserRoleEnum.CUSTOMER
-    );
-
-    when(authService.signin(anyString(), anyString())).thenReturn(responseDto);
+    TokenDto tokenDto = new TokenDto("testToken", "Bearer testRefreshToken", 1000L, 2000L,
+        "user1@gmail.com", "user1", UserRoleEnum.CUSTOMER);
+    when(authService.signin("user1@gmail.com", "user1234")).thenReturn(tokenDto);
+    when(jwtUtil.getRefreshTokenExpiration()).thenReturn(2000L);
 
     // When & Then
     mockMvc.perform(post("/api/auth/signin")
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(requestDto))
-        )
+            .content(objectMapper.writeValueAsString(requestDto)))
         .andExpect(status().isOk())
-        // 헤더에 JWT 토큰이 담기는지 확인
         .andExpect(header().string(JwtUtil.AUTHORIZATION_HEADER, "testToken"))
-        // JSON 응답 검증
         .andExpect(jsonPath("$.message").value("성공"))
-        .andExpect(jsonPath("$.data.token").value("testToken"))
-        .andExpect(jsonPath("$.data.email").value("test@gmail.com"))
+        .andExpect(jsonPath("$.data.accessToken").value("testToken"))
+        .andExpect(jsonPath("$.data.email").value("user1@gmail.com"))
+        .andDo(result -> {
+          String setCookie = result.getResponse().getHeader("Set-Cookie");
+          System.out.println("Set-Cookie: " + setCookie);
+        })
         .andDo(print());
   }
 
@@ -129,6 +139,44 @@ class AuthSessionControllerTest {
   }
 
   @Test
+  @DisplayName("리프레시 토큰 성공 테스트")
+  void refreshTokenSuccessTest() throws Exception {
+
+    // Given
+    String cookieRefreshToken = "testRefreshToken";
+    String refreshToken = "Bearer " + cookieRefreshToken;
+
+    when(jwtUtil.validateToken(cookieRefreshToken)).thenReturn(true);
+    when(jwtUtil.getUserEmailFromToken(cookieRefreshToken)).thenReturn("test@gmail.com");
+    when(jwtUtil.createAccessToken("test@gmail.com", UserRoleEnum.CUSTOMER)).thenReturn("newAccessToken");
+    when(jwtUtil.createRefreshToken("test@gmail.com")).thenReturn("Bearer newRefreshToken");
+    when(jwtUtil.getAccessTokenExpiration()).thenReturn(1000L);
+    when(jwtUtil.getRefreshTokenExpiration()).thenReturn(2000L);
+
+    TokenDto tokenDto = new TokenDto("newAccessToken", "Bearer newRefreshToken", 1000L, 2000L,
+        "test@gmail.com", "testUser", UserRoleEnum.CUSTOMER);
+    when(authService.refresh(refreshToken)).thenReturn(tokenDto);
+
+    // When & Then
+    mockMvc.perform(post("/api/auth/refresh")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            // refresh 엔드포인트는 쿠키에서 refresh 토큰을 추출
+            .cookie(new jakarta.servlet.http.Cookie("refresh", cookieRefreshToken)))
+        .andExpect(status().isOk())
+        .andExpect(header().string(JwtUtil.AUTHORIZATION_HEADER, "newAccessToken"))
+        .andExpect(jsonPath("$.message").value("토큰 갱신 성공"))
+        .andExpect(jsonPath("$.data.accessToken").value("newAccessToken"))
+        .andDo(result -> {
+          String setCookie = result.getResponse().getHeader("Set-Cookie");
+          System.out.println("Set-Cookie (refresh): " + setCookie);
+        })
+        .andDo(print());
+
+  }
+
+
+  @Test
   @DisplayName("로그아웃 성공 테스트")
   void signoutSuccessTest() throws Exception {
     // Given
@@ -138,14 +186,21 @@ class AuthSessionControllerTest {
         .build();
     UserDetailsImpl userDetails = new UserDetailsImpl(testUser);
 
+    when(jwtUtil.getTokenFromHeader(eq(JwtUtil.AUTHORIZATION_HEADER), any(HttpServletRequest.class)))
+        .thenReturn("someAccessToken");
+    
+    doNothing().when(authService).signout("someAccessToken", "test@gmail.com");
+
     // When & Then
     mockMvc.perform(post("/api/auth/signout")
             .with(user(userDetails))  // 인증된 사용자로 요청
-            .with(csrf()))
+            .with(csrf())
+            .header(JwtUtil.AUTHORIZATION_HEADER, "Bearer someAccessToken"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.message").value("로그아웃 성공"))
         .andExpect(jsonPath("$.data.userEmail").value("test@gmail.com"))
         .andExpect(jsonPath("$.data.message").value("로그아웃 성공"))
         .andDo(print());
   }
+
 }
