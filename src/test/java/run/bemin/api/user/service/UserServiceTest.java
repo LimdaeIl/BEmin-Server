@@ -152,7 +152,7 @@ class UserServiceTest {
         });
 
     // When
-    Page<UserResponseDto> result = userService.getAllUsers(false, 0, 10, "createdDate", true, null);
+    Page<UserResponseDto> result = userService.getAllUsers(true, 0, 10, "createdDate", true, null);
 
     // Then
     System.out.println("조회 결과: " + result);
