@@ -73,14 +73,14 @@ public class PaymentService {
    * */
   @Transactional
   public PaymentDto createPayment(@RequestBody CreatePaymentDto createPaymentDto) {
-    // 주문이 존재하는지 확인하기
-    Order order = orderRepository.findById(UUID.fromString(createPaymentDto.getOrderId()))
-        .orElseThrow(() -> new PaymentException(ErrorCode.ORDER_NOT_FOUND));
-
     // 결제 금액이 0보다 작거나 같은 경우 예외 발생
     if (createPaymentDto.getAmount() < 0) {
       throw new PaymentException(ErrorCode.INVALID_INPUT_VALUE);
     }
+
+    // 주문이 존재하는지 확인하기
+    Order order = orderRepository.findById(UUID.fromString(createPaymentDto.getOrderId()))
+        .orElseThrow(() -> new PaymentException(ErrorCode.ORDER_NOT_FOUND));
 
     Payment payment = Payment.builder()
         .order(order)
