@@ -31,14 +31,10 @@ public class JwtUtil {
   public static final String AUTHORIZATION_KEY = "auth";
   // Token 식별자
   public static final String BEARER_PREFIX = "Bearer ";
-  //  // AccessToken 만료시간 - 1일
-  //  private final long ACCESS_TOKEN_TIME = 24 * 60 * 60 * 1000L;
-
-  // AccessToken 만료시간 - 7분 - Test용
-  private final long ACCESS_TOKEN_TIME = 7 * 60 * 1000L;
-
-  // RefreshToken 만료시간 - 3분
-  private final long REFRESHTOKEN_TIME = 3 * 60 * 1000L;
+  // AccessToken 만료시간 60분
+  private final long ACCESS_TOKEN_TIME = 10 * 60 * 60 * 1000L;
+  // RefreshToken 만료시간 - 24시간
+  private final long REFRESHTOKEN_TIME = 24 * 60 * 60 * 1000L;
 
 
   @Value("${jwt.secret.key}") // Base64 Encode 한 SecretKey

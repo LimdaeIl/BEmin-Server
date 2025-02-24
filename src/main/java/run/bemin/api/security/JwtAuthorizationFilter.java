@@ -36,7 +36,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     String tokenValue = jwtUtil.getTokenFromHeader(JwtUtil.AUTHORIZATION_HEADER, req);
 
     if (tokenValue != null && jwtUtil.validateToken(tokenValue)) {
-      // Redis에서 토큰이 블랙리스트에 등록되어 있는지 확인
+      // 토큰의 남은 유효시간 10분 이하이면 경고 로그
+      long remainingTime = jwtUtil.getRemainingExpirationTime(tokenValue);
+      if (remainingTime <= 10 * 60 * 1000L) {
+        log.warn("Token will expire in {} seconds", remainingTime / 1000);
+        res.addHeader("X-Token-Remaining", String.valueOf(remainingTime));
+      }
+
+      // Redis 블랙리스트 체크
       String isLogout = (String) redisTemplate.opsForValue().get(tokenValue);
       if (isLogout == null) { // 블랙리스트에 없다면 정상 인증
         String username = jwtUtil.getUserEmailFromToken(tokenValue);
