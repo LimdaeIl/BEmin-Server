@@ -11,22 +11,20 @@ import run.bemin.api.payment.entity.Payment;
 @Builder
 public class PaymentCancelDto {
   private UUID paymentId;
-  private String orderId;
   private PaymentMethod paymentMethod;
   private int amount;
   private String status;
-  private LocalDateTime updatedAt;
-  private String updatedBy;
+  private LocalDateTime deletedAt;
+  private String deletedBy;
 
   public static PaymentCancelDto from(Payment payment) {
     return PaymentCancelDto.builder()
         .paymentId(payment.getPaymentId())
-        .orderId(String.valueOf(payment.getOrder().getOrderId()))
         .paymentMethod(payment.getPayment())
         .amount(payment.getAmount())
         .status(payment.getStatus().getValue())
-        .updatedAt(payment.getUpdatedAt())
-        .updatedBy(payment.getUpdatedBy())
+        .deletedAt(payment.getUpdatedAt())
+        .deletedBy(payment.getUpdatedBy())
         .build();
   }
 }
