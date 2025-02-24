@@ -141,26 +141,22 @@ public class AuthService {
   }
 
   /**
-   * 로그인 메서드 - 인증 후 JWT Access Token, Refresh Token 발급 - Refresh Token은 Redis에 "RT:{userEmail}" 키로 저장 (TTL: Refresh
-   * Token 만료 시간) - 로그인 정보를 캐시에 저장 (예: 캐시 이름 "LOGIN_USER")
+   * 로그인 메서드
    */
   @CachePut(cacheNames = "LOGIN_USER", key = "'login:' + #userEmail")
   @Transactional
   public TokenDto signin(String userEmail, String password) {
-    // 인증 처리
+
     Authentication authentication = authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(userEmail, password)
     );
 
-    // 인증된 사용자 정보 추출
     UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
     UserRoleEnum role = userDetails.getRole();
 
-    // Access Token과 Refresh Token 생성
     String accessToken = jwtUtil.createAccessToken(userEmail, role);
     String refreshToken = jwtUtil.createRefreshToken(userEmail);
 
-    // TokenDto에 토큰 및 만료시간 정보를 담아서 생성
     TokenDto tokenDto = new TokenDto(
         accessToken,
         refreshToken,
@@ -171,43 +167,36 @@ public class AuthService {
         role
     );
 
-    // Redis에 Refresh Token 저장 (예: key "RT:user@example.com")
+    // Redis에 Refresh Token 저장
     redisTemplate.opsForValue()
         .set("RT:" + userEmail, refreshToken, tokenDto.getRefreshTokenExpiresTime(), TimeUnit.MILLISECONDS);
     log.info("Refresh Token stored in Redis: key=RT:{} , token={}", userEmail, refreshToken);
 
-    // TokenDto 반환
     return tokenDto;
   }
 
   @Transactional
   public TokenDto refresh(String refreshToken) {
-    // refresh 토큰은 쿠키에서 전달받은 값이고, JwtUtil.createRefreshToken()에서 생성된 값은 "Bearer ..." 형식입니다.
-    // 검증을 위해 Bearer 접두어를 제거한 순수 토큰을 사용합니다.
+
     String pureToken = refreshToken;
     if (pureToken.startsWith(JwtUtil.BEARER_PREFIX)) {
       pureToken = pureToken.substring(JwtUtil.BEARER_PREFIX.length());
     }
 
-    // refresh 토큰 검증 (순수 토큰으로 검증)
     if (!jwtUtil.validateToken(pureToken)) {
       throw new RuntimeException("유효하지 않거나 만료된 Refresh Token 입니다.");
     }
 
-    // 토큰에서 사용자 이메일 추출 (순수 토큰 사용)
     String userEmail = jwtUtil.getUserEmailFromToken(pureToken);
 
-    // Redis에 저장된 refresh 토큰 조회 (저장할 때는 "Bearer ..." 형식 그대로 저장)
     String storedRefreshToken = (String) redisTemplate.opsForValue().get("RT:" + userEmail);
     if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
       throw new RuntimeException("저장된 Refresh Token과 일치하지 않거나 만료되었습니다.");
     }
 
-    // 사용자 정보 조회
     User user = authRepository.findByUserEmail(userEmail)
         .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-    // 새 Access Token 생성
     String newAccessToken = jwtUtil.createAccessToken(userEmail, user.getRole());
 
     // 새 Refresh Token 발급 후 Redis 업데이트
@@ -215,7 +204,6 @@ public class AuthService {
     redisTemplate.opsForValue()
         .set("RT:" + userEmail, newRefreshToken, jwtUtil.getRefreshTokenExpiration(), TimeUnit.MILLISECONDS);
 
-    // TokenDto에 모든 정보 포함하여 반환
     return new TokenDto(
         newAccessToken,
         newRefreshToken,
@@ -235,13 +223,13 @@ public class AuthService {
   @CacheEvict(cacheNames = "LOGIN_USER", key = "'login:' + #userEmail")
   @Transactional
   public void signout(String accessToken, String userEmail) {
-    // 1. Redis에서 해당 사용자의 Refresh Token 삭제 (키 예: "RT:user@example.com")
+
     redisTemplate.delete("RT:" + userEmail);
 
-    // 2. Access Token의 남은 유효시간 계산 (jwtUtil에 구현된 메서드 사용)
+    // Access Token의 남은 유효시간 계산
     long remainingTime = jwtUtil.getRemainingExpirationTime(accessToken);
 
-    // 3. Access Token을 블랙리스트에 등록 (키: accessToken, 값: "logout", TTL: 남은 유효시간)
+    // Access Token을 블랙리스트에 등록
     redisTemplate.opsForValue().set(accessToken, "logout", remainingTime, TimeUnit.MILLISECONDS);
   }
 

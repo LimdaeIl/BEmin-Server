@@ -30,7 +30,7 @@ public enum ErrorCode {
 
   // 인증/인가 관련 오류
   AUTH_ACCESS_DENIED(HttpStatus.FORBIDDEN.value(), "A001", "접근이 거부되었습니다."),
-
+  AUTH_REFRESH_TOKEN_MISSING(HttpStatus.BAD_REQUEST.value(), "A002", "Refresh Token 쿠키가 제공되지 않았습니다."),
 
   // Signup (회원가입 관련 오류)
   SIGNUP_DUPLICATE_EMAIL(HttpStatus.BAD_REQUEST.value(), "S001", "이미 존재하는 이메일입니다."),

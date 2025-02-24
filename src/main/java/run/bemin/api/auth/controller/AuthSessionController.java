@@ -18,8 +18,10 @@ import run.bemin.api.auth.dto.SigninRequestDto;
 import run.bemin.api.auth.dto.SigninResponseDto;
 import run.bemin.api.auth.dto.SignoutResponseDto;
 import run.bemin.api.auth.dto.TokenDto;
+import run.bemin.api.auth.exception.RefreshTokenMissingException;
 import run.bemin.api.auth.jwt.JwtUtil;
 import run.bemin.api.auth.service.AuthService;
+import run.bemin.api.general.exception.ErrorCode;
 import run.bemin.api.general.response.ApiResponse;
 import run.bemin.api.security.UserDetailsImpl;
 
@@ -67,8 +69,7 @@ public class AuthSessionController {
 
     String refreshToken = extractRefreshToken(req);
     if (refreshToken == null) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(ApiResponse.from(HttpStatus.BAD_REQUEST, "Refresh Token 쿠키가 제공되지 않았습니다.", null));
+      throw new RefreshTokenMissingException(ErrorCode.AUTH_REFRESH_TOKEN_MISSING.getMessage());
     }
 
     TokenDto tokenDto = authService.refresh("Bearer " + refreshToken);
