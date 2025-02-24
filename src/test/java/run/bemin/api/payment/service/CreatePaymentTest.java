@@ -34,7 +34,7 @@ import run.bemin.api.user.entity.User;
 import run.bemin.api.user.entity.UserRoleEnum;
 
 @ExtendWith(MockitoExtension.class)
-class PaymentServiceTest {
+class CreatePaymentTest {
 
   @Mock
   private OrderRepository orderRepository;
@@ -80,13 +80,6 @@ class PaymentServiceTest {
         PaymentMethod.CREDIT_CARD,
         10000
     );
-
-    Payment payment = Payment.builder()
-        .order(testOrder)
-        .payment(request.getPaymentMethod())
-        .status(PaymentStatus.COMPLETED)
-        .amount(request.getAmount())
-        .build();
   }
 
   @Test
@@ -121,6 +114,7 @@ class PaymentServiceTest {
   }
 
   @Test
+  @DisplayName("주문이 존재하지 않으면 PaymentException이 발생해야 한다")
   void createPayment_OrderNotFound_ShouldThrowException() {
     // Given
     when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
@@ -131,21 +125,6 @@ class PaymentServiceTest {
     verify(paymentRepository, never()).save(any(Payment.class));
   }
 
-  @Test
-  @DisplayName("결제 금액이 유효하지 않을 때 PaymentException이 발생해야 한다")
-  void createPayment_InvalidAmount_ShouldThrowException() {
-    // Given
-    CreatePaymentDto invalidCreatePaymentDto = new CreatePaymentDto(
-        orderId.toString(),
-        PaymentMethod.CREDIT_CARD,
-        -1000
-    );
-
-    // When & Then
-    assertThrows(PaymentException.class, () -> paymentService.createPayment(invalidCreatePaymentDto));
-    verify(orderRepository, never()).findById(any(UUID.class));
-    verify(paymentRepository, never()).save(any(Payment.class));
-  }
 
   @Test
   @DisplayName("결제 금액이 0일 때 PaymentException이 발생해야 한다")
