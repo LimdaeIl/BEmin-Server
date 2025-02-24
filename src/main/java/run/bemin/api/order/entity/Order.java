@@ -139,7 +139,7 @@ public class Order extends AuditableEntity {
    */
   public void addOrderDetail(OrderDetail orderDetail) {
     this.orderDetails.add(orderDetail);
-    this.totalPrice += orderDetail.getPrice();
+    this.totalPrice += orderDetail.getPrice() * orderDetail.getQuantity();
     orderDetail.setOrder(this);
   }
 

@@ -1,6 +1,7 @@
 package run.bemin.api.order.entity;
 
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 import run.bemin.api.order.dto.request.UpdateOrderRequest;
 import run.bemin.api.order.exception.OrderNullException;
 import run.bemin.api.order.exception.OrderStatusException;
@@ -13,6 +14,7 @@ import run.bemin.api.user.entity.User;
  * 배달기사님 연락처 변경
  * 주문취소 로직
  */
+@Service
 public class OrderDomainService {
 
   /**

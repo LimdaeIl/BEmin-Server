@@ -5,10 +5,10 @@ import run.bemin.api.review.domain.ReviewRating;
 
 @Getter
 public class ReviewUpdateRequestDto {
-  private int rate;
+  private int reviewRating;
   private String description;
 
-  public ReviewRating getReviewRating() {
-    return ReviewRating.fromValue(rate);
+  public ReviewRating toReviewRating() {
+    return ReviewRating.fromValue(reviewRating);
   }
 }

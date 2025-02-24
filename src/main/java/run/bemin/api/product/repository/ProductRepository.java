@@ -13,7 +13,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
   @Query("""
     SELECT new run.bemin.api.product.dto.ProductSearchDto(
-       p.price, p.title, p.comment, p.imageUrl, p.isHidden
+       p.productId, p.price, p.title, p.comment, p.imageUrl, p.isHidden
     )
     FROM Product p
     WHERE p.store.id = :storeId AND p.activated = true

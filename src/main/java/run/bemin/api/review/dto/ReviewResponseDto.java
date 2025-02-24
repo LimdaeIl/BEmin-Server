@@ -9,11 +9,11 @@ import run.bemin.api.review.domain.ReviewRating;
 public class ReviewResponseDto {
   private String userEmail;
   private String description;
-  private int reviewRating;
+  private ReviewRating reviewRating;
 
   public ReviewResponseDto(String userEmail, String description, ReviewRating reviewRating) {
     this.userEmail = userEmail;
     this.description = description;
-    this.reviewRating = reviewRating.getValue();
+    this.reviewRating = reviewRating;
   }
 }

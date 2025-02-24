@@ -1,6 +1,7 @@
 package run.bemin.api.review.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,7 +21,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import run.bemin.api.general.auditing.AuditableEntity;
 import run.bemin.api.order.entity.Order;
+import run.bemin.api.payment.entity.Payment;
 import run.bemin.api.review.domain.ReviewRating;
+import run.bemin.api.review.domain.ReviewRatingConverter;
 import run.bemin.api.review.domain.ReviewStatus;
 import run.bemin.api.store.entity.Store;
 import run.bemin.api.user.entity.User;
@@ -30,12 +33,17 @@ import run.bemin.api.user.entity.User;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends AuditableEntity {
+
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private UUID reviewId;
 
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "order_id", nullable = false)
+  @JoinColumn(name = "payment_id", nullable = false, unique = true)
+  private Payment payment;
+
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "order_id", nullable = false, unique = true)
   private Order order;
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -46,9 +54,9 @@ public class Review extends AuditableEntity {
   @JoinColumn(name = "userEmail", nullable = false)
   private User user;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Convert(converter = ReviewRatingConverter.class) // 변환기 적용
   @Column(nullable = false)
-  private ReviewRating reviewRating;
+  private ReviewRating rating;
 
   @Column(columnDefinition = "text")
   private String description;
@@ -60,25 +68,31 @@ public class Review extends AuditableEntity {
   private String deletedBy;
   private LocalDateTime deletedAt;
 
+  // 숫자로 변환해서 반환하는 메서드
+//  public int getNumericReviewRating() {
+//    return ReviewRatingConverter.toNumeric(this.rating);
+//  }
+
   // 리뷰 수정하기
   public void updateReview(ReviewRating reviewRating, String description) {
-    this.reviewRating = reviewRating;
+    this.rating = reviewRating;
     this.description = description;
   }
 
   // 리뷰 삭제하기
-  public void deletedBy(String deletedBy) {
+  public void deleteReview(String deletedBy) {
     this.status = ReviewStatus.DELETED;
     this.deletedAt = LocalDateTime.now();
     this.deletedBy = deletedBy;
   }
 
   @Builder
-  public Review(Order order, Store store, User user, ReviewRating reviewRating, String description) {
+  public Review(Payment payment, Order order, Store store, User user, ReviewRating reviewRating, String description) {
+    this.payment = payment;
     this.order = order;
     this.store = store;
     this.user = user;
-    this.reviewRating = reviewRating;
+    this.rating = reviewRating;
     this.description = description;
     this.status = ReviewStatus.ACTIVE;
   }

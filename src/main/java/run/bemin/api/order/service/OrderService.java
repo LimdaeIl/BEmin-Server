@@ -25,6 +25,8 @@ import run.bemin.api.order.exception.OrderNotFoundException;
 import run.bemin.api.order.repo.OrderDetailRepository;
 import run.bemin.api.order.repo.OrderRepository;
 import run.bemin.api.user.entity.User;
+import run.bemin.api.user.exception.UserNotFoundException;
+import run.bemin.api.user.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -32,25 +34,27 @@ public class OrderService {
 
   private final OrderRepository orderRepository;
   private final OrderDetailRepository orderDetailRepository;
-  private final OrderDomainService orderDomainService = new OrderDomainService();
+  private final OrderDomainService orderDomainService;
+  private final UserRepository userRepository;
 
   /**
    * 주문 생성
    */
   @Transactional
   public Order createOrder(CreateOrderRequest req, User user) {
+    // User 조회
+    User foundUser = userRepository.findByUserEmail(user.getUserEmail())
+        .orElseThrow(() -> new UserNotFoundException(user.getUserEmail()));
+
     // 1. OrderAddress 생성
     OrderAddress orderAddress = req.getAddress();
 
     // 2. OrderType 매핑
     OrderType orderType = OrderType.fromCode(req.getOrderType());
 
-    System.out.println(orderType.getCode());
-    System.out.println(orderType.getDescription());
-
     // 3. 도메인 서비스로 검증 및 주문 객체 생성
     Order order = orderDomainService.createOrder(
-        user, //User는 추후 JWT에서 가져오거나 수정이 필요하다.
+        foundUser,
         req.getStoreId(),
         orderType,
         req.getStoreName(),
@@ -126,12 +130,12 @@ public class OrderService {
         .pageNumber(orders.getNumber())
         .pageSize(orders.getSize())
         .totalPages(orders.getTotalPages())
-        .totalElements(orders.getTotalPages())
+        .totalElements(orders.getTotalElements())
         .build();
   }
 
   /**
-   * orderId로 OrderDetail들을 조회하여 List로 반환
+   * orderId로 OrderDetail 들을 조회하여 List 로 반환
    * @param orderId // orderId
    * @return // ProductDetailDTO List
    */
@@ -150,24 +154,9 @@ public class OrderService {
   }
 
   /**
-   * 주문 상태 및 배달기사 정보 수정
-   *
-   * @param req // orderId, orderStatus, riderTel
-   * @return // 수정된 주문 객체
+   * 사용자의 주문 취소
+   * @param req // orderId
    */
-//  @Transactional
-//  public void updateOrder(UpdateOrderRequest req) {
-//    // 1. Order 객체 찾기
-//    Order order = orderRepository.findById(req.getOrderId())
-//        .orElseThrow(() -> new OrderNotFoundException(req.getOrderId()));
-//
-//    // 2. 도메인 서비스로 비즈니스 로직 실행
-//    orderDomainService.updateOrder(order, req);
-//
-//    // 3. update 저장 및 반환
-//    return orderRepository.save(order);
-//  }
-
   @Transactional
   public void cancelOrder(CancelOrderRequest req) {
     // 1. Order 객체 찾기
