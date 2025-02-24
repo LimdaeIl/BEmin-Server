@@ -1,6 +1,5 @@
 package run.bemin.api.review.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -25,12 +24,16 @@ import run.bemin.api.review.dto.ReviewDeleteResponseDto;
 import run.bemin.api.review.dto.ReviewUpdateRequestDto;
 import run.bemin.api.review.dto.ReviewUpdateResponseDto;
 import run.bemin.api.review.service.ReviewService;
+import run.bemin.api.security.UserDetailsImpl;
+import run.bemin.api.user.entity.User;
+import run.bemin.api.user.service.UserService;
 
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class ReviewController {
   private final ReviewService reviewService;
+  private final UserService userService;
 
   // 특정 Store의 리뷰 페이징 조회
   @GetMapping("/reviews/{storeId}")
@@ -55,12 +58,12 @@ public class ReviewController {
   // 리뷰 생성하기
   @PostMapping("/reviews")
   public ResponseEntity<ReviewCreateResponseDto> createReview(
-      HttpServletRequest request,
+      UserDetailsImpl userDetails,
       @RequestBody ReviewCreateRequestDto requestDto) {
 
-    String authToken = request.getHeader("Authorization");
+    User user = userService.findByUserEmail(userDetails.getUsername());
 
-    ReviewCreateResponseDto responseDto = reviewService.createReview(authToken, requestDto);
+    ReviewCreateResponseDto responseDto = reviewService.createReview(user, requestDto);
 
     return ResponseEntity.ok(responseDto);
   }
@@ -68,23 +71,24 @@ public class ReviewController {
   // 리뷰 수정하기
   @PatchMapping("/reviews/{reviewId}")
   public ResponseEntity<ReviewUpdateResponseDto> updateReview(
-      HttpServletRequest request,
+      UserDetailsImpl userDetails,
       @PathVariable UUID reviewId,
       @RequestBody ReviewUpdateRequestDto reviewUpdateRequest
   ) {
-    String authToken = request.getHeader("Authorization");
+    User user = userService.findByUserEmail(userDetails.getUsername());
 
-    ReviewUpdateResponseDto updatedReview = reviewService.updateReview(authToken, reviewId, reviewUpdateRequest);
+    ReviewUpdateResponseDto updatedReview = reviewService.updateReview(user, reviewId, reviewUpdateRequest);
 
     return ResponseEntity.ok(updatedReview);
   }
 
   // 리뷰 삭제하기
   @DeleteMapping("/reviews/{reviewId}")
-  public ResponseEntity<ReviewDeleteResponseDto> deleteReview(HttpServletRequest request, @PathVariable UUID reviewId) {
-    String authToken = request.getHeader("Authorization");
+  public ResponseEntity<ReviewDeleteResponseDto> deleteReview(UserDetailsImpl userDetails,
+                                                              @PathVariable UUID reviewId) {
+    User user = userService.findByUserEmail(userDetails.getUsername());
 
-    ReviewDeleteResponseDto deleteReview = reviewService.deleteReview(authToken, reviewId);
+    ReviewDeleteResponseDto deleteReview = reviewService.deleteReview(user, reviewId);
 
     return ResponseEntity.ok(deleteReview);
   }

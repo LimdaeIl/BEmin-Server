@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import run.bemin.api.auth.jwt.JwtUtil;
 import run.bemin.api.general.exception.ErrorCode;
 import run.bemin.api.order.entity.Order;
 import run.bemin.api.order.entity.OrderStatus;
@@ -31,7 +30,6 @@ import run.bemin.api.review.repository.ReviewRepository;
 import run.bemin.api.store.entity.Store;
 import run.bemin.api.store.repository.StoreRepository;
 import run.bemin.api.user.entity.User;
-import run.bemin.api.user.repository.UserRepository;
 
 @Slf4j
 @Service
@@ -42,32 +40,13 @@ public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final OrderRepository orderRepository;
   private final StoreRepository storeRepository;
-  private final UserRepository userRepository;
   private final ReviewProducer reviewProducer;
-  private final JwtUtil jwtUtil;
-
-  // 토큰 추출하기
-  public String extractToken(String token) {
-    if (token == null || !token.startsWith("Bearer ")) {
-      throw new ReviewException(ErrorCode.AUTH_ACCESS_DENIED);
-    }
-
-    String extractToken = token.substring(7);
-    return jwtUtil.getUserEmailFromToken(extractToken);
-  }
 
   // order 찾기
   private Order getOrder(UUID orderId) {
     Order order = orderRepository.findById(orderId)
         .orElseThrow(() -> new ReviewException(ErrorCode.ORDER_NOT_FOUND));
     return order;
-  }
-
-  // user 찾기
-  private User getUser(String userEmail) {
-    User user = userRepository.findByUserEmail(userEmail)
-        .orElseThrow(() -> new ReviewException(ErrorCode.USER_LIST_NOT_FOUND));
-    return user;
   }
 
   // payment 찾기
@@ -117,10 +96,7 @@ public class ReviewService {
 
   // 리뷰 생성
   @Transactional
-  public ReviewCreateResponseDto createReview(String authToken, ReviewCreateRequestDto requestDto) {
-    // JWT 토큰에서 사용자 이메일 추출
-    String userEmail = extractToken(authToken);
-
+  public ReviewCreateResponseDto createReview(User user, ReviewCreateRequestDto requestDto) {
     // order 가져오기
     Order order = getOrder(UUID.fromString(requestDto.getOrderId()));
 
@@ -128,9 +104,6 @@ public class ReviewService {
     if (!isOrderStatusReviewable(order.getOrderStatus())) {
       throw new ReviewException(ErrorCode.ORDER_NOT_REVIEWABLE);
     }
-
-    // user 가져오기
-    User user = getUser(userEmail);
 
     // store 가져오기
     Store store = getStore(UUID.fromString(requestDto.getStoreId()));
@@ -161,13 +134,7 @@ public class ReviewService {
 
   // 리뷰 수정하기
   @Transactional
-  public ReviewUpdateResponseDto updateReview(String authToken, UUID reviewId, ReviewUpdateRequestDto request) {
-    // JWT 토큰에서 사용자 이메일 추출
-    String userEmail = extractToken(authToken);
-
-    // 사용자 조회
-    User user = getUser(userEmail);
-
+  public ReviewUpdateResponseDto updateReview(User user, UUID reviewId, ReviewUpdateRequestDto request) {
     // 리뷰 조회
     Review review = getReview(reviewId);
 
@@ -184,13 +151,7 @@ public class ReviewService {
 
   // 리뷰 삭제하기
   @Transactional
-  public ReviewDeleteResponseDto deleteReview(String authToken, UUID reviewId) {
-    // JWT 토큰에서 사용자 이메일 추출
-    String userEmail = extractToken(authToken);
-
-    // 사용자 조회
-    User user = getUser(userEmail);
-
+  public ReviewDeleteResponseDto deleteReview(User user, UUID reviewId) {
     // 리뷰 조회
     Review review = getReview(reviewId);
 
@@ -199,7 +160,7 @@ public class ReviewService {
       throw new ReviewException(ErrorCode.REVIEW_CANNOT_FIX);
     }
 
-    review.deleteReview(userEmail);
+    review.deleteReview(user.getUserEmail());
 
     // 평균 평점 계산
     double newAvgRating = reviewRepository.findAverageRatingByStore(review.getStore().getId());

@@ -23,8 +23,8 @@ public class PaymentCancelDto {
         .paymentMethod(payment.getPayment())
         .amount(payment.getAmount())
         .status(payment.getStatus().getValue())
-        .deletedAt(payment.getUpdatedAt())
-        .deletedBy(payment.getUpdatedBy())
+        .deletedAt(payment.getDeletedAt())
+        .deletedBy(payment.getDeletedBy())
         .build();
   }
 }
