@@ -116,7 +116,7 @@ public class Store extends AuditableEntity {
 
 
   // 카테고리 연결 헬퍼 메서드. 첫 번째 추가되는 카테고리를 primary 로 설정
-  public void addCategory(Category category, String createdBy) {
+  public void addCategory(Category category) {
     boolean isPrimary = this.storeCategories.isEmpty();
     StoreCategory storeCategory = StoreCategory.create(this, category, isPrimary);
     this.storeCategories.add(storeCategory);

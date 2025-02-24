@@ -46,6 +46,14 @@ public record CreateStoreRequestDto(
     @Min(value = 0, message = STORE_MINIMUM_PRICE_INVALID)
     Integer minimumPrice,
 
+    // 사용자 이메일: 표준 이메일 형식
+    @NotBlank(message = USER_EMAIL_BLANK)
+    @Pattern(
+        regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$",
+        message = USER_EMAIL_INVALID
+    )
+    String userEmail,
+
     // 우편번호: 정확히 5자리 숫자
     @NotBlank(message = STORE_ZONE_CODE_BLANK)
     @Pattern(
