@@ -3,11 +3,13 @@ package run.bemin.api.auth.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,15 +17,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import run.bemin.api.auth.dto.SigninRequestDto;
-import run.bemin.api.auth.dto.SigninResponseDto;
 import run.bemin.api.auth.dto.SignupRequestDto;
 import run.bemin.api.auth.dto.SignupResponseDto;
+import run.bemin.api.auth.dto.TokenDto;
+import run.bemin.api.auth.exception.RefreshTokenInvalidException;
+import run.bemin.api.auth.exception.RefreshTokenMismatchException;
 import run.bemin.api.auth.exception.SigninUnauthorizedException;
 import run.bemin.api.auth.exception.SignupDuplicateEmailException;
 import run.bemin.api.auth.exception.SignupDuplicateNicknameException;
@@ -36,6 +42,7 @@ import run.bemin.api.user.dto.UserAddressDto;
 import run.bemin.api.user.entity.User;
 import run.bemin.api.user.entity.UserAddress;
 import run.bemin.api.user.entity.UserRoleEnum;
+import run.bemin.api.user.exception.UserNotFoundException;
 import run.bemin.api.user.repository.UserAddressRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +56,9 @@ class AuthServiceTest {
 
   @Mock
   private AuthenticationManager authenticationManager;
+
+  @Mock
+  private RedisTemplate redisTemplate;
 
   @Mock
   private JwtUtil jwtUtil;
@@ -196,7 +206,7 @@ class AuthServiceTest {
 
   @Test
   @DisplayName("로그인 성공 테스트")
-  void SigninSuccessTest() {
+  void signinSuccessTestWithPrint() {
     // Given
     signinRequestDto = SigninRequestDto.builder()
         .userEmail("test@gmail.com")
@@ -205,29 +215,52 @@ class AuthServiceTest {
 
     testUser = User.builder()
         .userEmail("test@gmail.com")
-        .password("encodedTest1234") // 실제 저장된 인코딩된 비밀번호
+        .password("encodedTest1234")
+        .nickname("testUser1")
         .role(UserRoleEnum.CUSTOMER)
         .build();
 
-    // 모의 Authentication 객체 반환
+    // 모의 Authentication 객체 생성 및 반환
     Authentication dummyAuth = mock(Authentication.class);
     when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
         .thenReturn(dummyAuth);
-
-    // dummyAuth.getPrincipal()에서 UserDetailsImpl 객체 반환
     UserDetailsImpl userDetails = new UserDetailsImpl(testUser);
     when(dummyAuth.getPrincipal()).thenReturn(userDetails);
 
-    when(jwtUtil.createAccessToken(anyString(), any(UserRoleEnum.class)))
-        .thenReturn("testToken");
+    // jwtUtil 모의 설정
+    when(jwtUtil.createAccessToken(testUser.getUserEmail(), testUser.getRole()))
+        .thenReturn("accessTokenTest");
+    when(jwtUtil.createRefreshToken(testUser.getUserEmail()))
+        .thenReturn("Bearer refreshTokenTest");
+    when(jwtUtil.getAccessTokenExpiration()).thenReturn(1000L);
+    when(jwtUtil.getRefreshTokenExpiration()).thenReturn(2000L);
+
+    // redisTemplate의 ValueOperations 모의 설정
+    ValueOperations<String, Object> valueOps = mock(ValueOperations.class);
+    when(redisTemplate.opsForValue()).thenReturn(valueOps);
+
+    when(valueOps.get("RT:" + testUser.getUserEmail())).thenReturn("Bearer refreshTokenTest");
 
     // When
-    SigninResponseDto response = authService.signin(signinRequestDto.getUserEmail(), signinRequestDto.getPassword());
+    TokenDto tokenDto = authService.signin(signinRequestDto.getUserEmail(), signinRequestDto.getPassword());
 
     // Then
-    assertEquals("testToken", response.getToken());
-    System.out.println("token: " + response.getToken());
+    assertEquals("accessTokenTest", tokenDto.getAccessToken());
+    assertEquals("Bearer refreshTokenTest", tokenDto.getRefreshToken());
+
+    // System.out.println을 통해 출력 확인
+    System.out.println("Access Token: " + tokenDto.getAccessToken());
+    System.out.println("Refresh Token: " + tokenDto.getRefreshToken());
+
+    // Redis에 저장된 값 확인
+    Object redisStoredValue = redisTemplate.opsForValue().get("RT:" + testUser.getUserEmail());
+    System.out.println("Redis 저장값 (RT:" + testUser.getUserEmail() + "): " + redisStoredValue);
+
+    // Redis에 Refresh Token 저장 여부 검증
+    verify(valueOps)
+        .set(eq("RT:" + testUser.getUserEmail()), eq("Bearer refreshTokenTest"), eq(2000L), eq(TimeUnit.MILLISECONDS));
   }
+
 
   @Test
   @DisplayName("로그인 실패 - 존재하지 않은 회원")
@@ -249,4 +282,136 @@ class AuthServiceTest {
 
     System.out.println("Expected exception occurred: " + exception.getMessage());
   }
+
+  @Test
+  @DisplayName("토큰 리프레시 성공 테스트")
+  void refreshTokenSuccessTestWithPrint() {
+    // Given
+    String refreshToken = "Bearer refreshTokenTest";
+    String pureRefreshToken = "refreshTokenTest";
+
+    when(jwtUtil.validateToken(pureRefreshToken)).thenReturn(true);
+    when(jwtUtil.getUserEmailFromToken(pureRefreshToken)).thenReturn("test@gmail.com");
+
+    ValueOperations<String, Object> valueOps = mock(ValueOperations.class);
+    when(redisTemplate.opsForValue()).thenReturn(valueOps);
+    // 기존 토큰 반환
+    when(valueOps.get("RT:" + "test@gmail.com")).thenReturn(refreshToken);
+
+    when(authRepository.findByUserEmail("test@gmail.com"))
+        .thenReturn(Optional.of(testUser));
+
+    // 새 토큰 생성 및 만료시간 반환
+    when(jwtUtil.createAccessToken("test@gmail.com", testUser.getRole()))
+        .thenReturn("newAccessToken");
+    when(jwtUtil.createRefreshToken("test@gmail.com"))
+        .thenReturn("newRefreshToken");
+    when(jwtUtil.getAccessTokenExpiration()).thenReturn(1000L);
+    when(jwtUtil.getRefreshTokenExpiration()).thenReturn(2000L);
+
+    // When
+    TokenDto refreshedTokenDto = authService.refresh(refreshToken);
+
+    // Then
+    assertEquals("newAccessToken", refreshedTokenDto.getAccessToken());
+    assertEquals("newRefreshToken", refreshedTokenDto.getRefreshToken());
+
+    System.out.println("New Access Token: " + refreshedTokenDto.getAccessToken());
+    System.out.println("New Refresh Token: " + refreshedTokenDto.getRefreshToken());
+
+    when(valueOps.get("RT:" + "test@gmail.com")).thenReturn("newRefreshToken");
+
+    Object redisStoredValue = redisTemplate.opsForValue().get("RT:" + "test@gmail.com");
+    System.out.println("Redis 저장값 (RT:test@gmail.com): " + redisStoredValue);
+
+    // Redis에 Refresh Token 저장 여부 검증
+    verify(valueOps)
+        .set(eq("RT:" + "test@gmail.com"), eq("newRefreshToken"), eq(2000L), eq(TimeUnit.MILLISECONDS));
+  }
+
+  @Test
+  @DisplayName("토큰 리프레시 실패 테스트 - 유효하지 않거나 만료된 Refresh Token")
+  void refreshTokenInvalidTest() {
+    // Given
+    String refreshToken = "Bearer refreshTokenTest";
+    String pureToken = "refreshTokenTest";
+
+    when(jwtUtil.validateToken(pureToken)).thenReturn(false);
+
+    // When & Then
+    RefreshTokenInvalidException exception = assertThrows(RefreshTokenInvalidException.class,
+        () -> authService.refresh(refreshToken));
+    System.out.println("Expected exception occurred: " + exception.getMessage());
+  }
+
+  @Test
+  @DisplayName("토큰 리프레시 실패 테스트 - 저장된 토큰과 불일치")
+  void refreshTokenMismatchTest() {
+    // Given
+    String refreshToken = "Bearer refreshTokenTest";
+    String pureToken = "refreshTokenTest";
+
+    when(jwtUtil.validateToken(pureToken)).thenReturn(true);
+    when(jwtUtil.getUserEmailFromToken(pureToken)).thenReturn(testUser.getUserEmail());
+
+    ValueOperations<String, Object> valueOps = mock(ValueOperations.class);
+    when(redisTemplate.opsForValue()).thenReturn(valueOps);
+
+    when(valueOps.get("RT:" + testUser.getUserEmail())).thenReturn("Bearer differentToken");
+
+    // When & Then
+    RefreshTokenMismatchException exception = assertThrows(RefreshTokenMismatchException.class,
+        () -> authService.refresh(refreshToken));
+    System.out.println("\"Expected exception occurred: " + exception.getMessage());
+  }
+
+  @Test
+  @DisplayName("토큰 리프레시 실패 테스트 - 사용자 미존재")
+  void refreshTokenUserNotFoundTest() {
+    // Given
+    String refreshToken = "Bearer refreshTokenTest";
+    String pureToken = "refreshTokenTest";
+
+    when(jwtUtil.validateToken(pureToken)).thenReturn(true);
+    when(jwtUtil.getUserEmailFromToken(pureToken)).thenReturn(testUser.getUserEmail());
+
+    ValueOperations<String, Object> valueOps = mock(ValueOperations.class);
+    when(redisTemplate.opsForValue()).thenReturn(valueOps);
+    // Redis에 저장된 토큰이 요청 토큰과 일치하는 경우
+    when(valueOps.get("RT:" + testUser.getUserEmail())).thenReturn(refreshToken);
+
+    when(authRepository.findByUserEmail(testUser.getUserEmail())).thenReturn(Optional.empty());
+
+    // When & Then
+    UserNotFoundException exception = assertThrows(UserNotFoundException.class,
+        () -> authService.refresh(refreshToken));
+    System.out.println("Expected exception occurred: " + exception.getMessage());
+  }
+
+
+  @Test
+  @DisplayName("로그아웃 성공 테스트")
+  void logoutSuccessTestWithPrint() {
+    // Given
+    String accessToken = "accessTokenTest";
+    String userEmail = testUser.getUserEmail();
+    // access 토큰 남은 유효시간 반환
+    when(jwtUtil.getRemainingExpirationTime(accessToken)).thenReturn(1000L);
+
+    // 블랙리스트 등록용
+    ValueOperations<String, Object> valueOps = mock(ValueOperations.class);
+    when(redisTemplate.opsForValue()).thenReturn(valueOps);
+
+    // When
+    authService.signout(accessToken, userEmail);
+
+    // Then: Redis에서 RT:userEmail 키 삭제 검증
+    verify(redisTemplate).delete("RT:" + userEmail);
+    verify(valueOps).set(eq(accessToken), eq("logout"), eq(1000L), eq(TimeUnit.MILLISECONDS));
+
+    System.out.println("로그아웃 테스트 - Redis에서 RT:" + userEmail + " 키가 삭제되었습니다.");
+    System.out.println("로그아웃 테스트 - Access Token(" + accessToken + ")이 블랙리스트에 TTL 1000L로 등록되었습니다.");
+  }
+
+
 }

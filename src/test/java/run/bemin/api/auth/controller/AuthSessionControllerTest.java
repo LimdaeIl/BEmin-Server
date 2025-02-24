@@ -1,7 +1,5 @@
 package run.bemin.api.auth.controller;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -81,7 +79,7 @@ class AuthSessionControllerTest {
         UserRoleEnum.CUSTOMER
     );
 
-    when(authService.signin(anyString(), anyString())).thenReturn(responseDto);
+//    when(authService.signin(anyString(), anyString())).thenReturn(responseDto);
 
     // When & Then
     mockMvc.perform(post("/api/auth/signin")

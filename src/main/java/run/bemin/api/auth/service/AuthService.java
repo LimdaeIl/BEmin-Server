@@ -9,6 +9,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +20,9 @@ import run.bemin.api.auth.dto.NicknameCheckResponseDto;
 import run.bemin.api.auth.dto.SignupRequestDto;
 import run.bemin.api.auth.dto.SignupResponseDto;
 import run.bemin.api.auth.dto.TokenDto;
+import run.bemin.api.auth.exception.RefreshTokenInvalidException;
+import run.bemin.api.auth.exception.RefreshTokenMismatchException;
+import run.bemin.api.auth.exception.SigninUnauthorizedException;
 import run.bemin.api.auth.exception.SignupDuplicateEmailException;
 import run.bemin.api.auth.exception.SignupDuplicateNicknameException;
 import run.bemin.api.auth.exception.SignupInvalidEmailFormatException;
@@ -31,6 +35,7 @@ import run.bemin.api.user.dto.UserAddressDto;
 import run.bemin.api.user.entity.User;
 import run.bemin.api.user.entity.UserAddress;
 import run.bemin.api.user.entity.UserRoleEnum;
+import run.bemin.api.user.exception.UserNotFoundException;
 import run.bemin.api.user.repository.UserAddressRepository;
 
 @Service
@@ -146,10 +151,14 @@ public class AuthService {
   @CachePut(cacheNames = "LOGIN_USER", key = "'login:' + #userEmail")
   @Transactional
   public TokenDto signin(String userEmail, String password) {
-
-    Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(userEmail, password)
-    );
+    Authentication authentication;
+    try {
+      authentication = authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(userEmail, password)
+      );
+    } catch (BadCredentialsException e) {
+      throw new SigninUnauthorizedException(ErrorCode.SIGNIN_UNAUTHORIZED_USER.getMessage());
+    }
 
     UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
     UserRoleEnum role = userDetails.getRole();
@@ -184,18 +193,18 @@ public class AuthService {
     }
 
     if (!jwtUtil.validateToken(pureToken)) {
-      throw new RuntimeException("유효하지 않거나 만료된 Refresh Token 입니다.");
+      throw new RefreshTokenInvalidException(ErrorCode.AUTH_REFRESH_TOKEN_INVALID.getMessage());
     }
 
     String userEmail = jwtUtil.getUserEmailFromToken(pureToken);
 
     String storedRefreshToken = (String) redisTemplate.opsForValue().get("RT:" + userEmail);
     if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
-      throw new RuntimeException("저장된 Refresh Token과 일치하지 않거나 만료되었습니다.");
+      throw new RefreshTokenMismatchException(ErrorCode.AUTH_REFRESH_TOKEN_MISMATCH.getMessage());
     }
 
     User user = authRepository.findByUserEmail(userEmail)
-        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        .orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
     String newAccessToken = jwtUtil.createAccessToken(userEmail, user.getRole());
 
