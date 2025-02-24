@@ -33,6 +33,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain)
       throws ServletException, IOException {
 
+    if (req.getRequestURI().startsWith("/swagger-ui") || req.getRequestURI().startsWith("/api-docs")) {
+      filterChain.doFilter(req, res);
+      return;
+    }
+
     String tokenValue = jwtUtil.getTokenFromHeader(JwtUtil.AUTHORIZATION_HEADER, req);
 
     if (tokenValue != null && jwtUtil.validateToken(tokenValue)) {

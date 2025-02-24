@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
-import run.bemin.api.auth.jwt.JwtUtil;
 import run.bemin.api.general.exception.ErrorCode;
 import run.bemin.api.order.entity.Order;
 import run.bemin.api.order.repo.OrderRepository;
@@ -20,6 +19,7 @@ import run.bemin.api.payment.dto.PaymentStatusResponseDto;
 import run.bemin.api.payment.entity.Payment;
 import run.bemin.api.payment.exception.PaymentException;
 import run.bemin.api.payment.repository.PaymentRepository;
+import run.bemin.api.user.entity.User;
 
 @Slf4j
 @Service
@@ -28,17 +28,6 @@ public class PaymentService {
 
   private final OrderRepository orderRepository;
   private final PaymentRepository paymentRepository;
-  private final JwtUtil jwtUtil;
-
-  // 토큰 추출하기
-  public String extractToken(String token) {
-    if (token == null || !token.startsWith("Bearer ")) {
-      throw new PaymentException(ErrorCode.INVALID_ACCESS);
-    }
-
-    String extractToken = token.substring(7);
-    return jwtUtil.getUserEmailFromToken(extractToken);
-  }
 
   /*
    * 메서드명 : getPaymentStatus
@@ -55,11 +44,9 @@ public class PaymentService {
    * 메서드명 : getUserPayments
    * 목적 : 사용자의 결제 내역 조회
    * */
-  public List<PaymentDto> getUserPayments(String authToken) {
-    String userEmail = extractToken(authToken);
-
+  public List<PaymentDto> getUserPayments(User user) {
     // 사용자 결제 내역 조회
-    List<Payment> payments = paymentRepository.findByCreatedBy(userEmail);
+    List<Payment> payments = paymentRepository.findByCreatedBy(user.getUserEmail());
 
     // dto 변환 후 반환
     return payments.stream()
@@ -73,14 +60,14 @@ public class PaymentService {
    * */
   @Transactional
   public PaymentDto createPayment(@RequestBody CreatePaymentDto createPaymentDto) {
-    // 주문이 존재하는지 확인하기
-    Order order = orderRepository.findById(UUID.fromString(createPaymentDto.getOrderId()))
-        .orElseThrow(() -> new PaymentException(ErrorCode.ORDER_NOT_FOUND));
-
     // 결제 금액이 0보다 작거나 같은 경우 예외 발생
     if (createPaymentDto.getAmount() < 0) {
       throw new PaymentException(ErrorCode.INVALID_INPUT_VALUE);
     }
+
+    // 주문이 존재하는지 확인하기
+    Order order = orderRepository.findById(UUID.fromString(createPaymentDto.getOrderId()))
+        .orElseThrow(() -> new PaymentException(ErrorCode.ORDER_NOT_FOUND));
 
     Payment payment = Payment.builder()
         .order(order)
@@ -99,9 +86,7 @@ public class PaymentService {
    * 목적 : 결제 취소
    * */
   @Transactional
-  public PaymentCancelDto cancelPayment(String authToken, UUID paymentId) {
-    String userEmail = extractToken(authToken);
-
+  public PaymentCancelDto cancelPayment(User user, UUID paymentId) {
     Payment payment = paymentRepository.findById(paymentId)
         .orElseThrow(() -> new PaymentException(ErrorCode.PAYMENT_NOT_FOUND));
 
@@ -110,7 +95,7 @@ public class PaymentService {
       throw new PaymentException(ErrorCode.PAYMENT_IS_CANCELED);
     }
 
-    payment.cancelPayment(userEmail);
+    payment.cancelPayment(user.getUserEmail());
 
     return PaymentCancelDto.from(payment);
   }

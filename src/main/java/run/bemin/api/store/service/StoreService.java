@@ -72,6 +72,10 @@ public class StoreService {
   public StoreDto createStore(CreateStoreRequestDto requestDto, UserDetailsImpl userDetails) {
     List<Category> categories = validateAndFetchCategories(requestDto.categoryIds());
 
+    // 새로운 주인 정보 가져오기
+    User newOwner = userRepository.findByUserEmail(requestDto.userEmail())
+        .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND.getMessage() + ": " + requestDto.userEmail()));
+
     StoreAddress storeAddress = StoreAddress.builder()
         .zoneCode(requestDto.zoneCode())
         .bcode(requestDto.bcode())
@@ -87,13 +91,12 @@ public class StoreService {
         requestDto.minimumPrice(),
         true, // isActive 기본값
         storeAddress,
-        userDetails.getUser() // 수정된 부분: User 객체 전달
+        newOwner // 수정된 부분: User 객체 전달
     );
 
     storeAddress.setStore(store); // 양방향 연관관계 설정: StoreAddress 에 Store 할당
 
-    // 카테고리 연결 (각 카테고리 등록 시 createdBy 정보를 전달)
-    categories.forEach(category -> store.addCategory(category, userDetails.getUsername()));
+    categories.forEach(store::addCategory);
 
     Store savedStore = storeRepository.save(store); // Store 저장 (Cascade 옵션 덕분에 주소도 함께 저장됨)
     return StoreDto.fromEntity(savedStore);

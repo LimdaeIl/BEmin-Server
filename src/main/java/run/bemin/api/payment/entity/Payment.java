@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -43,7 +44,10 @@ public class Payment extends AuditableEntity {
   @Column(nullable = false)
   private PaymentStatus status;
 
-  @Column(nullable = true)
+  @Column(name = "deleted_at")
+  private LocalDateTime deletedAt;
+
+  @Column(name = "deleted_by")
   private String deletedBy;
 
   // 결제 상태 변경 메서드 : COMPLETED -> FAILED
@@ -55,6 +59,7 @@ public class Payment extends AuditableEntity {
   public void cancelPayment(String deletedBy) {
     this.status = PaymentStatus.CANCELED;
     this.deletedBy = deletedBy;
+    this.deletedAt = LocalDateTime.now();
   }
 
   @Builder

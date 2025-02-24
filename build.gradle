@@ -66,6 +66,13 @@ dependencies {
     //Redis 및 캐시 의존성 추천 - 공희진 2/24
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+    // RabbitMQ를 사용하기 위한 Spring AMQP
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+
+    // Swagger - 김형주 2/24
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
 }
 
 tasks.named('test') {
