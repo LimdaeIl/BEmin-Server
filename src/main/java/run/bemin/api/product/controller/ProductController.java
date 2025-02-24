@@ -1,5 +1,7 @@
 package run.bemin.api.product.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -29,11 +31,13 @@ import run.bemin.api.store.entity.Store;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/product")
+@Tag(name = "상품", description = "HomeController")
 public class ProductController {
   private final ProductService productService;
   private final ProductValidator validator;
 
   @PostMapping("/{storeId}/products")
+  @Operation(summary = "상품 추가하기", description = "가게 주인인지 확인한 후, store id 기준으로 가게에 상품을 추가합니다.")
   public ApiResponse<MessageResponseDto> addProduct(@PathVariable String storeId,
                                                     @RequestBody ProductRequestDto productRequestDto) {
     UUID storeUUID = UUID.fromString(storeId);

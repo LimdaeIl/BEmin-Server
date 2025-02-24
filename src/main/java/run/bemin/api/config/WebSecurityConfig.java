@@ -8,11 +8,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import run.bemin.api.auth.jwt.JwtUtil;
 import run.bemin.api.security.JwtAuthorizationFilter;
 import run.bemin.api.security.UserDetailsServiceImpl;
@@ -45,7 +49,10 @@ public class WebSecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     // CSRF 설정
-    http.csrf((csrf) -> csrf.disable());
+    http.csrf(AbstractHttpConfigurer::disable);
+
+    // CORS 설정
+    http.cors(configurer -> configurer.configurationSource(corsConfigurationSource()));
 
     // 기본 설정인 Session 방식은 사용하지 않고 JWT 방식을 사용하기 위한 설정
     http.sessionManagement((sessionManagement) ->
@@ -57,6 +64,7 @@ public class WebSecurityConfig {
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/api/users/email/**").permitAll()
             .requestMatchers("/api/users/nickname/**").permitAll()
+            .requestMatchers("/favicon.ico", "/swagger", "/v3/api-docs/**", "/api-docs/**" ,"/swagger-ui/**", "/swagger-resources/**").permitAll() // 문서화
             .requestMatchers("/api/**").permitAll()
             .anyRequest().authenticated() // 그 외 모든 요청 인증처리
     );
@@ -65,6 +73,21 @@ public class WebSecurityConfig {
     http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
+
+  }
+
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.addAllowedOriginPattern("*");   // 모든 origin 허용, 필요에 따라 특정 origin으로 변경 가능
+    configuration.addAllowedMethod("*");
+    configuration.addAllowedHeader("*");         // 모든 헤더 허용
+    configuration.setAllowCredentials(true);
+    configuration.setMaxAge(3600L);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
   }
 
 }
