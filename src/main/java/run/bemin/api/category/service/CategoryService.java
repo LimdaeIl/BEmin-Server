@@ -54,7 +54,7 @@ public class CategoryService {
     existsCategoryByName(requestDto.name());
     existsByUserEmail(userDetails.getUsername());
 
-    Category category = Category.create(requestDto.name(), userDetails.getUsername());
+    Category category = Category.create(requestDto.name());
     categoryRepository.save(category);
 
     return CategoryDto.fromEntity(category);
@@ -77,7 +77,7 @@ public class CategoryService {
 
     // 중복이 없는 경우, 카테고리 생성
     List<Category> categoriesToCreate = requestDtoList.stream()
-        .map(dto -> Category.create(dto.name(), userDetails.getUsername()))
+        .map(dto -> Category.create(dto.name()))
         .collect(Collectors.toList());
 
     // saveAll() 결과를 List 로 변환
