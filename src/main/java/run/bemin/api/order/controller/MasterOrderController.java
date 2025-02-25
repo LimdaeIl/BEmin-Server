@@ -1,5 +1,8 @@
-package run.bemin.api.order.control;
+package run.bemin.api.order.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +24,7 @@ import run.bemin.api.security.UserDetailsImpl;
 @RequiredArgsConstructor
 @RequestMapping("/api/master-orders")
 @PreAuthorize("hasRole('MANANGER') or hasRole('MASTER')")
+@Tag(name = "주문(MASTER, MANAGER)", description = "MasterOrderController")
 public class MasterOrderController {
 
   private final OrderMasterService orderMasterService;
@@ -33,8 +37,9 @@ public class MasterOrderController {
    * @return delete 된 order 를 ReadOrderResponse 객체로 반환
    */
   @PatchMapping("delete")
+  @Operation(summary = "주문 삭제(마스터)", description = "고객이 order 에 대한 상품 상세 정보를 확인하는 API 입니다.")
   public ResponseEntity<ApiResponse<ReadOrderResponse>> deleteOrder (
-      @RequestBody @Valid DeleteOrderRequest req,
+      @RequestBody @Valid @Parameter(description = "삭제할 주문 UUID") DeleteOrderRequest req,
       @AuthenticationPrincipal UserDetailsImpl user
   ) {
     orderMasterService.deleteOrder(req, user);
