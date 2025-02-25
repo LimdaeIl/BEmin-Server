@@ -1,4 +1,4 @@
-# 20팀 : BE민(BE달의 민족)<a href="https://fe-project-tau.vercel.app/seoul-signiel"><img src="C:\Users\piay8\Desktop\-006.png" align="left" width="100"></a>
+# 20팀 : BE민(BE달의 민족)<a href="https://fe-project-tau.vercel.app/seoul-signiel"><img src="https://github.com/user-attachments/assets/1d13b544-c1c3-4eb6-b39f-6120c919f2e8" align="left" width="100"></a>
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://github.com/sperta-BEmin/BEmin-Server&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 [![GitHub issues](https://img.shields.io/github/issues/Final-Project-Team6/BE_Project.svg)](https://github.com/sperta-BEmin/BEmin-Server/issues)
@@ -26,8 +26,7 @@
 | <a href="https://github.com/kim0527"><img src="https://avatars.githubusercontent.com/u/143387515?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/kimseonhee126"><img src="https://avatars.githubusercontent.com/u/108293826?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/heejinkong"><img src="https://avatars.githubusercontent.com/u/113762366?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/RTPC01"><img src="https://avatars.githubusercontent.com/u/117623568?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/LimdaeIl"><img src="https://avatars.githubusercontent.com/u/131642334?v=4" alt="profile" width="140" height="140"></a> |
 | <div align="center"><a href="https://github.com/kim0527" target="_blank"><img src="https://img.shields.io/badge/kim0527-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/kimseonhee126" target="_blank"><img src="https://img.shields.io/badge/kimseonhee126-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/heejinkong" target="_blank"><img src="https://img.shields.io/badge/heejinkong-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/RTPC01" target="_blank"><img src="https://img.shields.io/badge/RTPC01-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/LimdaeIl" target="_blank"><img src="https://img.shields.io/badge/LimdaeIl-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> |
 
-<img src="C:\Users\piay8\AppData\Roaming\Typora\typora-user-images\image-20250225154500974.png" alt="image-20250225154500974" style="zoom:50%;" />
-
+<img src="https://github.com/user-attachments/assets/1297a0f9-9ce1-43f0-8fdf-b3b3e1da0c4f" alt="image-20250225154500974" style="zoom:30%;" />
 
 
 ## 🚎 프로젝트 아키텍처
@@ -80,7 +79,7 @@
 
 ## 📈 DataBase Schema
 
-![image-20250225160330129](C:\Users\piay8\AppData\Roaming\Typora\typora-user-images\image-20250225160330129.png)
+![image](https://github.com/user-attachments/assets/968bf20e-349b-4080-bee2-e77240cb43ce)
 
 
 
