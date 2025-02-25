@@ -51,7 +51,7 @@ public class AdminCategoryController {
    */
   @Operation(summary = "[관리자] 단 건 카테고리 등록하기",
       description = """
-          name(필수) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다.
+          name(필수) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PostMapping
@@ -73,7 +73,7 @@ public class AdminCategoryController {
    */
   @Operation(summary = "[관리자] 두 개 이상의 카테고리 등록하기",
       description = """
-          name(필수) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다.
+          name(필수) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PostMapping("/batch")
@@ -99,7 +99,7 @@ public class AdminCategoryController {
       description = """
           name(선택) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다. \n
           page(선택) : 조회할 페이지 번호(defaultValue = 0) \n
-          size(선택) : 한 페이지에 포함될 항목 수(defaultValue = 10)
+          size(선택) : 한 페이지에 포함될 항목 수(defaultValue = 10) \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @GetMapping
@@ -130,7 +130,7 @@ public class AdminCategoryController {
   @Operation(summary = "[관리자] 카테고리 수정하기",
       description = """
           name(필수) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다. \n
-          isDeleted(필수) : 카테고리 삭제 여부 입니다.
+          isDeleted(필수) : 카테고리 삭제 여부 입니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PatchMapping("/{categoryId}")
@@ -154,7 +154,7 @@ public class AdminCategoryController {
    */
   @Operation(summary = "[관리자] 카테고리 삭제하기",
       description = """
-          categoryId(필수) : 삭제할 카테고리 고유 식별 번호
+          categoryId(필수) : 삭제할 카테고리 고유 식별 번호 \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @DeleteMapping("/{categoryId}")

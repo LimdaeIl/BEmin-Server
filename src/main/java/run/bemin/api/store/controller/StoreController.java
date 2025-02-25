@@ -41,7 +41,7 @@ public class StoreController {
    */
   @Operation(summary = "[사용자] 특정 가게의 상세 정보 조회하기)",
       description = """
-          storeId(필수): 가게 고유 식별 번호
+          storeId(필수): 가게 고유 식별 번호 \n
           """)
   @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANANGER') or hasRole('MASTER') or hasRole('OWNER')")
   @GetMapping("/{storeId}")
@@ -66,7 +66,7 @@ public class StoreController {
       description = """
           name(선택) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다. \n
           page(선택) : 조회할 페이지 번호(defaultValue = 0) \n
-          size(선택) : 한 페이지에 포함될 항목 수(defaultValue = 10)
+          size(선택) : 한 페이지에 포함될 항목 수(defaultValue = 10) \n
           """)
   @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANANGER') or hasRole('MASTER') or hasRole('OWNER')")
   @GetMapping
@@ -97,10 +97,10 @@ public class StoreController {
    */
   @Operation(summary = "[사용자] 모든 가게 조회하기(삭제 제외))",
       description = """
-          categoryName(선택): 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다.
-          storeName(선택): 가게 이름은 한글, 영문, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~50글자 이내여야 합니다.
+          categoryName(선택): 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다. \n
+          storeName(선택): 가게 이름은 한글, 영문, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~50글자 이내여야 합니다. \n
           page(선택) : 조회할 페이지 번호(defaultValue = 0) \n
-          size(선택) : 한 페이지에 포함될 항목 수(defaultValue = 10)
+          size(선택) : 한 페이지에 포함될 항목 수(defaultValue = 10) \n
           """)
   @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANANGER') or hasRole('MASTER') or hasRole('OWNER')")
   @GetMapping("/search")

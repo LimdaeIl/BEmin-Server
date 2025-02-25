@@ -40,7 +40,7 @@ public class CategoryController {
       description = """
           name(선택) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다. \n
           page(선택) : 조회할 페이지 번호(defaultValue = 0) \n
-          size(선택) : 한 페이지에 포함될 항목 수(defaultValue = 10)
+          size(선택) : 한 페이지에 포함될 항목 수(defaultValue = 10) \n
           """)
   @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANANGER') or hasRole('MASTER') or hasRole('OWNER')")
   @GetMapping
