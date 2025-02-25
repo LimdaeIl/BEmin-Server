@@ -1,4 +1,4 @@
-package run.bemin.api.user.dto;
+package run.bemin.api.user.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

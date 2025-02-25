@@ -1,4 +1,4 @@
-package run.bemin.api.user.dto;
+package run.bemin.api.user.dto.response;
 
 import java.util.UUID;
 import lombok.Getter;
@@ -21,7 +21,7 @@ public class UserAddressResponseDto {
     this.detail = address.getDetail();
     this.isRepresentative = address.getIsRepresentative();
   }
-  
+
   public static UserAddressResponseDto fromEntity(UserAddress address) {
     return new UserAddressResponseDto(address);
   }

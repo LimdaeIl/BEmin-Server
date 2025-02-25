@@ -1,4 +1,4 @@
-package run.bemin.api.user.dto;
+package run.bemin.api.user.dto.response;
 
 import java.util.List;
 import lombok.Getter;

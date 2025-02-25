@@ -166,14 +166,14 @@ public class AuthService {
     String accessToken = jwtUtil.createAccessToken(userEmail, role);
     String refreshToken = jwtUtil.createRefreshToken(userEmail);
 
-    TokenDto tokenDto = new TokenDto(
+    User user = authRepository.findByUserEmail(userEmail)
+        .orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
+    TokenDto tokenDto = TokenDto.fromEntity(
+        user,
         accessToken,
         refreshToken,
         jwtUtil.getAccessTokenExpiration(),
-        jwtUtil.getRefreshTokenExpiration(),
-        userEmail,
-        userDetails.getNickname(),
-        role
+        jwtUtil.getRefreshTokenExpiration()
     );
 
     // Redis에 Refresh Token 저장
@@ -213,14 +213,12 @@ public class AuthService {
     redisTemplate.opsForValue()
         .set("RT:" + userEmail, newRefreshToken, jwtUtil.getRefreshTokenExpiration(), TimeUnit.MILLISECONDS);
 
-    return new TokenDto(
+    return TokenDto.fromEntity(
+        user,
         newAccessToken,
         newRefreshToken,
         jwtUtil.getAccessTokenExpiration(),
-        jwtUtil.getRefreshTokenExpiration(),
-        userEmail,
-        user.getNickname(),
-        user.getRole()
+        jwtUtil.getRefreshTokenExpiration()
     );
   }
 
