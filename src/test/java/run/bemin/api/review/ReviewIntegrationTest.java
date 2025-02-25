@@ -3,6 +3,9 @@ package run.bemin.api.review;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import jakarta.persistence.EntityManagerFactory;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +16,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-
 import run.bemin.api.auth.util.JwtUtil;
 import run.bemin.api.order.entity.Order;
 import run.bemin.api.order.entity.OrderAddress;
@@ -56,6 +58,9 @@ public class ReviewIntegrationTest {
   private UserRepository userRepository;
 
   @Autowired
+  private EntityManagerFactory entityManagerFactory;
+
+  @Autowired
   private JwtUtil jwtUtil;
 
   // RabbitTemplate 를 통해 RabbitMQ 연결 상태 확인 (선택 사항)
@@ -92,7 +97,7 @@ public class ReviewIntegrationTest {
     storeAddress.setStore(testStore);
     testStore = storeRepository.save(testStore);
 
-    // 테스트용 OrderAddress는 OrderAddress.of(...) 정적 팩토리 메서드를 이용
+    // 테스트용 OrderAddress 는 OrderAddress.of(...) 정적 팩토리 메서드를 이용
     OrderAddress orderAddress = OrderAddress.of("12345", "지번 주소 예시", "도로명 주소 예시", "상세 주소 예시");
     testOrder = Order.builder()
         .user(testUser)
@@ -117,7 +122,7 @@ public class ReviewIntegrationTest {
 
   @Test
   @DisplayName("[RabbitMQ, Redis] 가게 평점 통합 테스트")
-  @Disabled // 통합 테스트 수행 정지
+  @Disabled
   public void testCreateReviewAndRatingUpdate() throws Exception {
     // JWT 토큰 생성
     String authToken = jwtUtil.createAccessToken(testUser.getUserEmail(), testUser.getRole());
@@ -185,5 +190,71 @@ public class ReviewIntegrationTest {
 
     // 검증: 리뷰가 하나이고 5점이면 평균 평점은 5.0이어야 함
     assertEquals(5.0, updatedStore.getRating().doubleValue(), "가게의 평점이 5.0이어야 합니다.");
+  }
+
+  @Test
+  @DisplayName("[RabbitMQ, Redis] 10000개의 리뷰 데이터 생성 및 평점 업데이트 테스트 - 각 리뷰마다 다른 주문 사용")
+  @Disabled
+  public void testCreate10000ReviewsWithUniqueOrders() throws Exception {
+    Statistics stats = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+    stats.setStatisticsEnabled(true);
+    stats.clear();
+
+    long startTime = System.currentTimeMillis();
+    // 여러 리뷰를 위해 기본적인 주문/결제 데이터를 복제하거나 새로 생성합니다.
+    for (int i = 0; i < 10000; i++) {
+      // 새로운 주문 생성 (주문마다 고유한 ID를 갖도록)
+      Order newOrder = Order.builder()
+          .user(testUser)
+          .storeId(testStore.getId())
+          .orderType(OrderType.DELIVERY)
+          .storeName(testStore.getName())
+          .orderAddress(OrderAddress.of("12345", "지번 주소", "도로명 주소", "상세 주소"))
+          .build();
+      newOrder.changeOrderStatus(OrderStatus.DELIVERY_COMPLETED);
+      newOrder = orderRepository.save(newOrder);
+
+      // 새로운 결제 생성
+      Payment newPayment = Payment.builder()
+          .order(newOrder)
+          .payment(PaymentMethod.CREDIT_CARD)
+          .amount(20000)
+          .status(PaymentStatus.COMPLETED)
+          .build();
+      newPayment = paymentRepository.save(newPayment);
+
+      // 1, 2, 3, 4, 5 점을 순환하도록 설정 (평균은 3.0)
+      int rating = 1 + (i % 5);
+      String description = "Review #" + i;
+      ReviewCreateRequestDto requestDto = new ReviewCreateRequestDto(
+          newPayment.getPaymentId().toString(),
+          newOrder.getOrderId().toString(),
+          testStore.getId().toString(),
+          rating,
+          description
+      );
+      if (i % 100 == 0) {
+        log.info("리뷰 생성 진행: {}번째 리뷰", i);
+      }
+      reviewService.createReview(testUser, requestDto);
+    }
+
+    // 비동기 처리 대기
+    Thread.sleep(15000);
+
+    Store updatedStore = storeRepository.findByIdWithReviews(testStore.getId())
+        .orElseThrow(() -> new RuntimeException("테스트용 Store 를 찾을 수 없습니다."));
+
+    log.info("생성된 리뷰 총 개수: {}", updatedStore.getReviews().size());
+
+    double expectedRating = 3.0;
+    log.info("예상 평점: {}", expectedRating);
+    log.info("실제 평점: {}", updatedStore.getRating());
+
+    assertEquals(expectedRating, updatedStore.getRating().doubleValue(), 0.01, "가게 평점은 3.0이어야 합니다.");
+
+    long endTime = System.currentTimeMillis();
+    log.info("Test execution time: {} ms", (endTime - startTime));
+    log.info("Query count: {}", stats.getQueryExecutionCount());
   }
 }
