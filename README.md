@@ -8,6 +8,15 @@
 [![AWS](https://img.shields.io/badge/AWS-Amazon_Web_Services-orange.svg?logo=amazon-aws)](https://aws.amazon.com/)
 
 
+<br>
+
+<div align=center>
+<img src="https://github.com/user-attachments/assets/1b87717a-839f-4d7d-a581-c9ff4087a6c4" alt="image-20250225154500974" width="800" style="zoom:30%;" />
+</div>
+
+
+<br>
+
 
 ## ✨Ch.1 AI 활용 비즈니스 프로젝트 구현 배경
 
