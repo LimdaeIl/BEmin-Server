@@ -41,8 +41,8 @@
 | 👨‍👩‍👧‍👦구성원        | 💼 담당 업무                                                  |
 | ----------------- | ------------------------------------------------------------ |
 | **BE(L): 김형주** | 1️⃣Product, Comment 도메인 담당<br />2️⃣S3 연동 및 이미지 최적화<br />3️⃣OpenAI 연동 CI/CD |
-| **BE: 김선희**    | 1️⃣User, Auth API 설계 및 구현<br />2️⃣Spring Security+JWT 기반 인증/인가 설계 및 구현<br />3️⃣Redis 기반 토큰 블랙리스트 및  캐싱 적용 |
-| **BE: 공희진**    | 1️⃣Payment, Review 도메인 담당<br />2️⃣RabbitMQ 메시지 큐를 사용하여 성능 최적화 |
+| **BE: 김선희**    | 1️⃣Payment, Review 도메인 담당<br />2️⃣RabbitMQ 메시지 큐를 사용하여 성능 최적화 |
+| **BE: 공희진**    | 1️⃣User, Auth API 설계 및 구현<br />2️⃣Spring Security+JWT 기반 인증/인가 설계 및 구현<br />3️⃣Redis 기반 토큰 블랙리스트 및  캐싱 적용 |
 | **BE: 신희연**    | 1️⃣Order, OderDetail 도메인 담당<br />2️⃣React, Next.js , BootStrap을 활용한 프론트엔드 개발 |
 | **BE: 임대일**    | 1️⃣Category, Service 도메인 담당                               |
 
@@ -50,8 +50,142 @@
 
 <br>
 
+## 📄 API docs
 
 
+
+</div>
+</details>
+
+<details>
+<summary><b>인증</b></summary>
+- 이메일·닉네임 중복 검사부터 회원가입·로그인·로그아웃·토큰 재발급 등 인증 기능을 제공하는 API입니다.
+<div markdown="1"><br/>
+<img width="747" alt="스크린샷 2025-02-25 오후 5 51 22" src="https://github.com/user-attachments/assets/72b44b2c-fa67-487e-a04a-b56fbce87ef1" />
+<img width="751" alt="스크린샷 2025-02-25 오후 5 51 41" src="https://github.com/user-attachments/assets/34d6abd5-9715-469e-8847-eae5902d698d" />
+
+</div>
+</details>
+
+</div>
+</details>
+
+<details>
+<summary><b>사용자</b></summary>
+- 유저 정보 조회·수정·탈퇴 및 주소 관리를 통합적으로 제공하는 API입니다.
+<div markdown="1"><br/>
+<img width="752" alt="스크린샷 2025-02-25 오후 5 52 51" src="https://github.com/user-attachments/assets/3d66e89c-3e78-4154-9e1a-97cd989ed5ef" />
+  
+</div>
+</details>
+
+
+</div>
+</details>
+
+<details>
+<summary><b>가게</b></summary>
+- 새로운 가게 등록부터 정보 조회·수정·삭제, 카테고리·주소·활성화 상태 관리 등 매장 운영 전반을 담당하는 API입니다.
+<div markdown="1"><br/>
+<img width="757" alt="스크린샷 2025-02-25 오후 5 54 53" src="https://github.com/user-attachments/assets/80f5ca26-25c1-49b7-be8f-209ecb8e30a4" />
+<img width="754" alt="스크린샷 2025-02-25 오후 5 55 17" src="https://github.com/user-attachments/assets/52b642fe-9cf7-4f09-adf8-5d30db3488d9" />
+
+
+</div>
+</details>
+
+
+</div>
+</details>
+
+<details>
+<summary><b>가게 카테고리</b></summary>
+- 카테고리 생성·조회·수정·소프트 삭제 등 카테고리 관리를 제공하는 API입니다.
+<div markdown="1"><br/>
+<img width="751" alt="스크린샷 2025-02-25 오후 5 56 02" src="https://github.com/user-attachments/assets/f4fd500c-de8e-4663-8926-c7845dd36c41" />
+<img width="751" alt="스크린샷 2025-02-25 오후 5 56 26" src="https://github.com/user-attachments/assets/5ca11913-555b-423a-b16e-20187a8cbea6" />
+
+</div>
+</details>
+
+</div>
+</details>
+
+<details>
+<summary><b>상품</b></summary>
+- 상품 조회·추가·수정·삭제 등 상품 관리 기능을 제공하는 API입니다.
+<div markdown="1"><br/>
+<img width="750" alt="스크린샷 2025-02-25 오후 5 59 34" src="https://github.com/user-attachments/assets/d7e803dd-b50c-43db-8816-1c198712be32" />
+
+</div>
+</details>
+
+</div>
+</details>
+
+<details>
+<summary><b>상품 이미지</b></summary>
+- 상품 이미지를 S3에 업로드·관리하는 API입니다.
+<div markdown="1"><br/>
+<img width="753" alt="스크린샷 2025-02-25 오후 6 04 57" src="https://github.com/user-attachments/assets/1b011858-e171-4266-be4a-6e7af6a1d69a" />
+
+</div>
+</details>
+
+</div>
+</details>
+
+<details>
+<summary><b>상품 설명</b></summary>
+-AI를 통해 새로운 설명을 생성하고 저장하는 API입니다.
+<div markdown="1"><br/>
+<img width="750" alt="스크린샷 2025-02-25 오후 6 00 09" src="https://github.com/user-attachments/assets/00cbbde9-7696-40bf-8d9a-ad317e085b7e" />
+
+</div>
+</details>
+
+</div>
+</details>
+
+<details>
+<summary><b>주문</b></summary>
+- 주문 생성·조회·취소·상태 변경 등 주문 처리 전반을 담당하는 API입니다.
+<div markdown="1"><br/>
+<img width="750" alt="스크린샷 2025-02-25 오후 6 01 43" src="https://github.com/user-attachments/assets/6d3e6e78-319b-4c1d-8c49-b604cad648c8" />
+<img width="751" alt="스크린샷 2025-02-25 오후 6 02 00" src="https://github.com/user-attachments/assets/8cbaa123-6dfe-426c-bd23-5804237eac87" />
+<img width="749" alt="스크린샷 2025-02-25 오후 6 02 16" src="https://github.com/user-attachments/assets/7abe29fd-c59e-4fdf-a622-a0cd6d46a05b" />
+
+
+</div>
+</details>
+
+</div>
+</details>
+
+<details>
+<summary><b>결제</b></summary>
+- 결제 상태 조회·요청·취소·내역 관리를 담당하는 API입니다.
+<div markdown="1"><br/>
+<img width="749" alt="스크린샷 2025-02-25 오후 6 03 31" src="https://github.com/user-attachments/assets/49aefa35-ec71-4590-aecd-1117d71d58e5" />
+
+</div>
+</details>
+
+</div>
+</details>
+
+<details>
+<summary><b>리뷰</b></summary>
+-  리뷰 작성·조회·수정·삭제 및 페이징·정렬 기능을 제공하는 API입니다.
+<div markdown="1"><br/>
+<img width="752" alt="스크린샷 2025-02-25 오후 6 04 21" src="https://github.com/user-attachments/assets/92ce5f4c-6efd-4a51-bf11-bb4ba20f9dc2" />
+
+</div>
+</details>
+
+
+
+<br>
 
 ## 🚎 프로젝트 아키텍처
 
