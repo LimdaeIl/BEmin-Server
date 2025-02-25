@@ -11,8 +11,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import run.bemin.api.general.exception.ErrorCode;
-import run.bemin.api.user.dto.UserAddressRequestDto;
-import run.bemin.api.user.dto.UserAddressResponseDto;
+import run.bemin.api.user.dto.request.UserAddressRequestDto;
+import run.bemin.api.user.dto.response.UserAddressResponseDto;
 import run.bemin.api.user.entity.User;
 import run.bemin.api.user.entity.UserAddress;
 import run.bemin.api.user.exception.UserAddressNotFoundException;
@@ -36,14 +36,10 @@ public class UserAddressService {
     User user = userRepository.findByUserEmail(userEmail)
         .orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
-    // 기존 대표 주소 조회 후 대표 주소 해제
-    List<UserAddress> existingReps = userAddressRepository.findByUserAndIsRepresentativeTrue(user);
-    for (UserAddress addr : existingReps) {
-      addr.setRepresentative(false);
-      userAddressRepository.save(addr);
-    }
+    // 기존 대표 주소 해제
+    resetRepresentativeAddresses(user);
 
-    // 추가 된 주소-> 대표 주소 변경
+    // 새 주소를 대표 주소로 생성
     UserAddress userAddress = UserAddress.builder()
         .bcode(addressRequestDto.getBcode())
         .jibunAddress(addressRequestDto.getJibunAddress())
@@ -55,10 +51,11 @@ public class UserAddressService {
 
     UserAddress savedAddress = userAddressRepository.save(userAddress);
 
+    // 회원의 대표 주소 필드 업데이트
     user.setRepresentativeAddress(savedAddress);
     userRepository.save(user);
 
-    return new UserAddressResponseDto(savedAddress);
+    return UserAddressResponseDto.fromEntity(savedAddress);
   }
 
   /**
@@ -70,13 +67,12 @@ public class UserAddressService {
                                                       Integer page,
                                                       Integer size) {
 
-    // 항상 대표 주소가 맨 위에 오고, 나머지 주소들은 생성일 기준 오름차순으로 정렬
     Sort sort = Sort.by(
         new Sort.Order(Sort.Direction.DESC, "isRepresentative"),
         new Sort.Order(Sort.Direction.ASC, "createdAt")
     );
     Pageable pageable = PageRequest.of(page, size, sort);
-    Boolean filterDeleted = Optional.ofNullable(isDeleted).orElse(false);
+    boolean filterDeleted = Optional.ofNullable(isDeleted).orElse(false);
 
     User user = userRepository.findByUserEmail(userEmail)
         .orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
@@ -85,21 +81,18 @@ public class UserAddressService {
     return addressPage.map(UserAddressResponseDto::fromEntity);
   }
 
-
+  /**
+   * 대표 주소 변경
+   */
   @Transactional
   public UserAddressResponseDto setRepresentativeAddress(String userEmail, UUID addressId) {
-
     User user = userRepository.findByUserEmail(userEmail)
         .orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
-    // 기존 대표 주소 해지
-    List<UserAddress> existingReps = userAddressRepository.findByUserAndIsRepresentativeTrue(user);
-    for (UserAddress addr : existingReps) {
-      addr.setRepresentative(false);
-      userAddressRepository.save(addr);
-    }
+    // 기존 대표 주소 해제
+    resetRepresentativeAddresses(user);
 
-    // 새로 지정할 대표 주소 조회 & 소유 여부 확인
+    // 새 대표 주소 조회 및 소유 검증
     UserAddress newRep = userAddressRepository.findById(addressId)
         .orElseThrow(() -> new UserAddressNotFoundException(ErrorCode.USER_ADDRESS_NOT_FOUND.getMessage()));
     if (!newRep.getUser().getUserEmail().equals(userEmail)) {
@@ -110,12 +103,21 @@ public class UserAddressService {
     newRep.setRepresentative(true);
     userAddressRepository.save(newRep);
 
-    // 회원의 대표 주소 필드 업데이트
+    // 회원의 대표 주소 업데이트
     user.setRepresentativeAddress(newRep);
     userRepository.save(user);
 
-    return new UserAddressResponseDto(newRep);
+    return UserAddressResponseDto.fromEntity(newRep);
   }
 
-
+  /**
+   * 회원의 기존 대표 주소를 모두 해제하는 공통 메서드
+   */
+  private void resetRepresentativeAddresses(User user) {
+    List<UserAddress> existingReps = userAddressRepository.findByUserAndIsRepresentativeTrue(user);
+    if (!existingReps.isEmpty()) {
+      existingReps.forEach(addr -> addr.setRepresentative(false));
+      userAddressRepository.saveAll(existingReps);
+    }
+  }
 }

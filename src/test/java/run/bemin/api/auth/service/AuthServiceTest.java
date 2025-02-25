@@ -206,7 +206,7 @@ class AuthServiceTest {
 
   @Test
   @DisplayName("로그인 성공 테스트")
-  void signinSuccessTestWithPrint() {
+  void signinSuccessTest() {
     // Given
     signinRequestDto = SigninRequestDto.builder()
         .userEmail("test@gmail.com")
@@ -226,6 +226,10 @@ class AuthServiceTest {
         .thenReturn(dummyAuth);
     UserDetailsImpl userDetails = new UserDetailsImpl(testUser);
     when(dummyAuth.getPrincipal()).thenReturn(userDetails);
+
+    // User 재조회
+    when(authRepository.findByUserEmail(signinRequestDto.getUserEmail()))
+        .thenReturn(Optional.of(testUser));
 
     // jwtUtil 모의 설정
     when(jwtUtil.createAccessToken(testUser.getUserEmail(), testUser.getRole()))
