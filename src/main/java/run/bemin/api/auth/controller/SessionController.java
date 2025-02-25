@@ -34,7 +34,7 @@ import run.bemin.api.security.UserDetailsImpl;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/auth")
-@Tag(name = "세션", description = "사용자 로그인/로그아웃 및 토큰 관리 컨트롤러")
+@Tag(name = "세션", description = "SessionController")
 public class SessionController {
 
   private final AuthService authService;
