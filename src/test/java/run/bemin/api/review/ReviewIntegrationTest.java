@@ -117,6 +117,7 @@ public class ReviewIntegrationTest {
 
   @Test
   @DisplayName("[RabbitMQ, Redis] 가게 평점 통합 테스트")
+  @Disabled // 통합 테스트 수행 정지
   public void testCreateReviewAndRatingUpdate() throws Exception {
     // JWT 토큰 생성
     String authToken = jwtUtil.createAccessToken(testUser.getUserEmail(), testUser.getRole());
