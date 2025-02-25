@@ -21,12 +21,18 @@
 
 ##  👨‍👩‍👧‍👦  구성원
 
-| BE(L): 김형주                                                | BE: 김선희                                                   | BE: 공희진                                                   | BE: 신희연                                                | BE: 임대일                                                |
+| BE(L): 김형주                                                | BE: 김선희                                                   | BE: 공희진                                                   | BE: 신희연                                                   | BE: 임대일                                                   |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | <a href="https://github.com/kim0527"><img src="https://avatars.githubusercontent.com/u/143387515?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/kimseonhee126"><img src="https://avatars.githubusercontent.com/u/108293826?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/heejinkong"><img src="https://avatars.githubusercontent.com/u/113762366?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/RTPC01"><img src="https://avatars.githubusercontent.com/u/117623568?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/LimdaeIl"><img src="https://avatars.githubusercontent.com/u/131642334?v=4" alt="profile" width="140" height="140"></a> |
 | <div align="center"><a href="https://github.com/kim0527" target="_blank"><img src="https://img.shields.io/badge/kim0527-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/kimseonhee126" target="_blank"><img src="https://img.shields.io/badge/kimseonhee126-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/heejinkong" target="_blank"><img src="https://img.shields.io/badge/heejinkong-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/RTPC01" target="_blank"><img src="https://img.shields.io/badge/RTPC01-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/LimdaeIl" target="_blank"><img src="https://img.shields.io/badge/LimdaeIl-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> |
+| <div align="center">[![Tistory](https://img.shields.io/badge/Tistory-hj0527-orange?logo=tistory)](https://hj0527.tistory.com/)</div> | <div align="center">[![Tistory](https://img.shields.io/badge/Tistory-kseonhee126-orange?logo=tistory)](https://kseonhee126.tistory.com/)</div> | <div align="center">[![Velog](https://img.shields.io/badge/Velog-@heejinkong-20c997?logo=velog)](https://velog.io/@heejinkong/posts)</div> | <div align="center">[![Velog](https://img.shields.io/badge/Velog-@hyhy9501-20c997?logo=velog)](https://velog.io/@hyhy9501/posts)</div> | <div align="center">[![Tistory](https://img.shields.io/badge/Tistory-limdae94-orange?logo=tistory)](https://limdae94.tistory.com/)</div> |
 
-<img src="https://github.com/user-attachments/assets/1297a0f9-9ce1-43f0-8fdf-b3b3e1da0c4f" alt="image-20250225154500974" width="1200" style="zoom:30%;" />
+
+
+
+
+
+<img src="https://github.com/user-attachments/assets/1297a0f9-9ce1-43f0-8fdf-b3b3e1da0c4f" alt="image-20250225154500974" width="500" style="zoom:30%;" />
 
 <br>
 
@@ -49,8 +55,10 @@
 
 ## 🚎 프로젝트 아키텍처
 
-<img src="https://cdn.discordapp.com/attachments/1340603753719398410/1343841948699459686/image_2.png?ex=67bebdd7&is=67bd6c57&hm=b5b0ab8ad0c77d9cf916eac42fb519b88375f63e70a4588cd0bcd54ab6d4eecf&" alt="img" style="zoom:50%;" />
+![image](https://github.com/user-attachments/assets/7f062246-333b-4f58-8609-c459aefe5aac)
 
+
+<br>
 
 
 ## 📈BE: Dependency And Devopment Team Tool
@@ -78,6 +86,7 @@
 - Springdoc OpenAPI Webmvc UI: 2.5.0
 
 
+<br>
 
 
 
@@ -92,6 +101,7 @@
 - `Erdcloud`: 데이터베이스 구성 요소를 시각화하기 위해 사용된 도구입니다.
 
 
+<br>
 
 
 
@@ -100,6 +110,7 @@
 ![image](https://github.com/user-attachments/assets/968bf20e-349b-4080-bee2-e77240cb43ce)
 
 
+<br>
 
 ## 🍃 Contributors
 
