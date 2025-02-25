@@ -21,12 +21,30 @@
 
 ##  👨‍👩‍👧‍👦  구성원
 
-| BE(L): 김형주                                                | BE: 김선희                                                   | BE: 공희진                                                   | FE(L): 신희연                                                | BE(L): 임대일                                                |
+| BE(L): 김형주                                                | BE: 김선희                                                   | BE: 공희진                                                   | BE: 신희연                                                | BE: 임대일                                                |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | <a href="https://github.com/kim0527"><img src="https://avatars.githubusercontent.com/u/143387515?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/kimseonhee126"><img src="https://avatars.githubusercontent.com/u/108293826?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/heejinkong"><img src="https://avatars.githubusercontent.com/u/113762366?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/RTPC01"><img src="https://avatars.githubusercontent.com/u/117623568?v=4" alt="profile" width="140" height="140"></a> | <a href="https://github.com/LimdaeIl"><img src="https://avatars.githubusercontent.com/u/131642334?v=4" alt="profile" width="140" height="140"></a> |
 | <div align="center"><a href="https://github.com/kim0527" target="_blank"><img src="https://img.shields.io/badge/kim0527-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/kimseonhee126" target="_blank"><img src="https://img.shields.io/badge/kimseonhee126-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/heejinkong" target="_blank"><img src="https://img.shields.io/badge/heejinkong-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/RTPC01" target="_blank"><img src="https://img.shields.io/badge/RTPC01-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> | <div align="center"><a href="https://github.com/LimdaeIl" target="_blank"><img src="https://img.shields.io/badge/LimdaeIl-181717?style=for-the-social&logo=github&logoColor=white"/></a></div> |
 
-<img src="https://github.com/user-attachments/assets/1297a0f9-9ce1-43f0-8fdf-b3b3e1da0c4f" alt="image-20250225154500974" style="zoom:30%;" />
+<img src="https://github.com/user-attachments/assets/1297a0f9-9ce1-43f0-8fdf-b3b3e1da0c4f" alt="image-20250225154500974" width="1200" style="zoom:30%;" />
+
+<br>
+
+
+
+| 👨‍👩‍👧‍👦구성원        | 💼 담당 업무                                                  |
+| ----------------- | ------------------------------------------------------------ |
+| **BE(L): 김형주** | 1️⃣Product, Comment 도메인 담당<br />2️⃣S3 연동 및 이미지 최적화<br />3️⃣OpenAI 연동 CI/CD |
+| **BE: 김선희**    | 1️⃣User, Auth API 설계 및 구현<br />2️⃣Spring Security+JWT 기반 인증/인가 설계 및 구현<br />3️⃣Redis 기반 토큰 블랙리스트 및  캐싱 적용 |
+| **BE: 공희진**    | 1️⃣Payment, Review 도메인 담당<br />2️⃣RabbitMQ 메시지 큐를 사용하여 성능 최적화 |
+| **BE: 신희연**    | 1️⃣Order, OderDetail 도메인 담당<br />2️⃣React, Next.js , BootStrap을 활용한 프론트엔드 개발 |
+| **BE: 임대일**    | 1️⃣Category, Service 도메인 담당                               |
+
+
+
+<br>
+
+
 
 
 ## 🚎 프로젝트 아키텍처
