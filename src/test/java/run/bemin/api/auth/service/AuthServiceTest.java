@@ -24,10 +24,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import run.bemin.api.auth.dto.SigninRequestDto;
-import run.bemin.api.auth.dto.SignupRequestDto;
-import run.bemin.api.auth.dto.SignupResponseDto;
 import run.bemin.api.auth.dto.TokenDto;
+import run.bemin.api.auth.dto.request.SigninRequestDto;
+import run.bemin.api.auth.dto.request.SignupRequestDto;
+import run.bemin.api.auth.dto.response.SignupResponseDto;
 import run.bemin.api.auth.exception.RefreshTokenInvalidException;
 import run.bemin.api.auth.exception.RefreshTokenMismatchException;
 import run.bemin.api.auth.exception.SigninUnauthorizedException;
@@ -35,8 +35,8 @@ import run.bemin.api.auth.exception.SignupDuplicateEmailException;
 import run.bemin.api.auth.exception.SignupDuplicateNicknameException;
 import run.bemin.api.auth.exception.SignupInvalidEmailFormatException;
 import run.bemin.api.auth.exception.SignupInvalidNicknameFormatException;
-import run.bemin.api.auth.jwt.JwtUtil;
 import run.bemin.api.auth.repository.AuthRepository;
+import run.bemin.api.auth.util.JwtUtil;
 import run.bemin.api.security.UserDetailsImpl;
 import run.bemin.api.user.dto.UserAddressDto;
 import run.bemin.api.user.entity.User;
@@ -206,7 +206,7 @@ class AuthServiceTest {
 
   @Test
   @DisplayName("로그인 성공 테스트")
-  void signinSuccessTestWithPrint() {
+  void signinSuccessTest() {
     // Given
     signinRequestDto = SigninRequestDto.builder()
         .userEmail("test@gmail.com")
@@ -226,6 +226,10 @@ class AuthServiceTest {
         .thenReturn(dummyAuth);
     UserDetailsImpl userDetails = new UserDetailsImpl(testUser);
     when(dummyAuth.getPrincipal()).thenReturn(userDetails);
+
+    // User 재조회
+    when(authRepository.findByUserEmail(signinRequestDto.getUserEmail()))
+        .thenReturn(Optional.of(testUser));
 
     // jwtUtil 모의 설정
     when(jwtUtil.createAccessToken(testUser.getUserEmail(), testUser.getRole()))

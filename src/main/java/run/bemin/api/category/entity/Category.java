@@ -46,7 +46,7 @@ public class Category extends AuditableEntity {
     this.name = name;
   }
 
-  public static Category create(String name, String createdBy) {
+  public static Category create(String name) {
     return new Category(name);
   }
 
