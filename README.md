@@ -103,7 +103,7 @@
 - 카테고리 생성·조회·수정·소프트 삭제 등 카테고리 관리를 제공하는 API입니다.
 <div markdown="1"><br/>
 <img width="751" alt="스크린샷 2025-02-25 오후 5 56 02" src="https://github.com/user-attachments/assets/f4fd500c-de8e-4663-8926-c7845dd36c41" />
-<img width="751" alt="스크린샷 2025-02-25 오후 5 56 26" src="https://github.com/user-attachments/assets/5ca11913-555b-423a-b16e-20187a8cbea6" />
+<img width="745" alt="스크린샷 2025-02-25 오후 6 22 22" src="https://github.com/user-attachments/assets/caf24e0b-01cc-440c-a732-b7646902a96e" />
 
 </div>
 </details>
