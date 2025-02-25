@@ -58,7 +58,7 @@ public class AdminStoreController {
    */
   @Operation(summary = "[관리자] 로그인된 사용자의 이메일로 단건 가게 목록을 조회하기)",
       description = """
-            로그인 유지(필수): 로그인된 사용자의 이메일로 조회합니다.
+            로그인 유지(필수): 로그인된 사용자의 이메일로 조회합니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @GetMapping("/by-user")
@@ -79,16 +79,16 @@ public class AdminStoreController {
    */
   @Operation(summary = "[관리자] 새로운 가게 등록하기)",
       description = """
-            name(필수): 가게 이름은 한글, 영문, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~50글자 이내여야 합니다.
-            phone(필수): 가게 전화번호는 숫자와 '-' 기호만 입력 가능합니다.
-            minimumPrice(필수): 가게 최소 주문 금액은 0원 이상이어야 합니다.
-            userEmail(필수): 이메일 형식에 맞는 주소이여야 합니다.
-            zoneCode(필수): 국가기초구역번호는 5자리 숫자입니다.
-            bcode(필수): 가게 법정동/법정리 코드는 10자리 숫자입니다.
-            jibunAddress(필수): 가게 지번 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다.
-            roadAddress(필수): 가게 도로 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다.
-            detail(필수): 가게 상세 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 1~84글자 이내여야 합니다.
-            categoryIds(필수): 최대 4개의 카테고리를 등록할 수 있습니다.
+            name(필수): 가게 이름은 한글, 영문, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~50글자 이내여야 합니다.  \n
+            phone(필수): 가게 전화번호는 숫자와 '-' 기호만 입력 가능합니다. \n
+            minimumPrice(필수): 가게 최소 주문 금액은 0원 이상이어야 합니다. \n
+            userEmail(필수): 이메일 형식에 맞는 주소이여야 합니다. \n
+            zoneCode(필수): 국가기초구역번호는 5자리 숫자입니다. \n
+            bcode(필수): 가게 법정동/법정리 코드는 10자리 숫자입니다. \n
+            jibunAddress(필수): 가게 지번 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다. \n
+            roadAddress(필수): 가게 도로 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다. \n
+            detail(필수): 가게 상세 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 1~84글자 이내여야 합니다. \n
+            categoryIds(필수): 최대 4개의 카테고리를 등록할 수 있습니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PostMapping
@@ -111,15 +111,15 @@ public class AdminStoreController {
   @Operation(summary = "[관리자] 특정 가게 정보를 수정하기)",
       description = """
             name(필수): 가게 이름은 한글, 영문, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~50글자 이내여야 합니다.
-            phone(필수): 가게 전화번호는 숫자와 '-' 기호만 입력 가능합니다.
-            minimumPrice(필수): 가게 최소 주문 금액은 0원 이상이어야 합니다.
-            isActive(필수): 가게 활성화 여부 설정 입니다.
-            zoneCode(필수): 국가기초구역번호는 5자리 숫자입니다.
-            bcode(필수): 가게 법정동/법정리 코드는 10자리 숫자입니다.
-            jibunAddress(필수): 가게 지번 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다.
-            roadAddress(필수): 가게 도로 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다.
-            detail(필수): 가게 상세 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 1~84글자 이내여야 합니다.
-            categoryIds(필수): 최대 4개의 카테고리를 등록할 수 있습니다.
+            phone(필수): 가게 전화번호는 숫자와 '-' 기호만 입력 가능합니다. \n
+            minimumPrice(필수): 가게 최소 주문 금액은 0원 이상이어야 합니다. \n
+            isActive(필수): 가게 활성화 여부 설정 입니다. \n
+            zoneCode(필수): 국가기초구역번호는 5자리 숫자입니다. \n
+            bcode(필수): 가게 법정동/법정리 코드는 10자리 숫자입니다. \n
+            jibunAddress(필수): 가게 지번 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다. \n
+            roadAddress(필수): 가게 도로 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다. \n
+            detail(필수): 가게 상세 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 1~84글자 이내여야 합니다. \n
+            categoryIds(필수): 최대 4개의 카테고리를 등록할 수 있습니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PatchMapping("/{storeId}")
@@ -141,7 +141,7 @@ public class AdminStoreController {
    */
   @Operation(summary = "[관리자] 특정 가게를 삭제하기)",
       description = """
-          storeId(필수): 가게 고유 식별 번호
+          storeId(필수): 가게 고유 식별 번호 \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @DeleteMapping("/{storeId}")
@@ -191,7 +191,7 @@ public class AdminStoreController {
   @Operation(summary = "[관리자] 특정 가게를 삭제하기)",
       description = """
           storeId(필수): 가게 고유 식별 번호 \n
-          categoryIds(필수): 최대 4개의 카테고리를 등록할 수 있습니다.
+          categoryIds(필수): 최대 4개의 카테고리를 등록할 수 있습니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PatchMapping("/{storeId}/categories")
@@ -213,12 +213,12 @@ public class AdminStoreController {
    */
   @Operation(summary = "[관리자] 특정 가게 주소 수정하기)",
       description = """
-          storeId(필수): 가게 고유 식별 번호
-          zoneCode(필수): 국가기초구역번호는 5자리 숫자입니다.
-          bcode(필수): 가게 법정동/법정리 코드는 10자리 숫자입니다.
-          jibunAddress(필수): 가게 지번 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다.
-          roadAddress(필수): 가게 도로 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다.
-          detail(필수): 가게 상세 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 1~84글자 이내여야 합니다.
+          storeId(필수): 가게 고유 식별 번호 \n
+          zoneCode(필수): 국가기초구역번호는 5자리 숫자입니다. \n
+          bcode(필수): 가게 법정동/법정리 코드는 10자리 숫자입니다. \n
+          jibunAddress(필수): 가게 지번 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다. \n
+          roadAddress(필수): 가게 도로 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 7~84글자 이내여야 합니다. \n
+          detail(필수): 가게 상세 주소는 한글, 영문, 숫자, 특수 문자(-, ,), 공백만 입력 가능 최대 1~84글자 이내여야 합니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PatchMapping("/{storeId}/address")
@@ -240,8 +240,8 @@ public class AdminStoreController {
 // 특정 가게 활성화 여부 설정하기
   @Operation(summary = "[관리자] 특정 가게 활성화 여부 설정하기)",
       description = """
-          storeId(필수): 가게 고유 식별 번호
-          isActive(필수): 가게 활성화 여부 설정 입니다.
+          storeId(필수): 가게 고유 식별 번호 \n
+          isActive(필수): 가게 활성화 여부 설정 입니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PatchMapping("/stores/{storeId}/active")
@@ -262,8 +262,8 @@ public class AdminStoreController {
    */
   @Operation(summary = "[관리자] 여러 가게 활성화 여부 설정하기)",
       description = """
-          storeId(필수): 가게 고유 식별 번호
-          isActive(필수): 가게 활성화 여부 설정 입니다.
+          storeId(필수): 가게 고유 식별 번호 \n
+          isActive(필수): 가게 활성화 여부 설정 입니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PatchMapping("/active")
@@ -284,8 +284,8 @@ public class AdminStoreController {
    */
   @Operation(summary = "[관리자] 특정 가게 최소주문금액 수정하기)",
       description = """
-          storeId(필수): 가게 고유 식별 번호
-          minimumPrice(필수): 가게 최소 주문 금액은 0원 이상이어야 합니다.
+          storeId(필수): 가게 고유 식별 번호 \n
+          minimumPrice(필수): 가게 최소 주문 금액은 0원 이상이어야 합니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PatchMapping("/{storeId}/minimum-price")
@@ -306,8 +306,8 @@ public class AdminStoreController {
    */
   @Operation(summary = "[관리자] 특정 가게 이름 수정하기)",
       description = """
-          storeId(필수): 가게 고유 식별 번호
-          name(필수): 가게 이름은 한글, 영문, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~50글자 이내여야 합니다.
+          storeId(필수): 가게 고유 식별 번호 \n
+          name(필수): 가게 이름은 한글, 영문, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~50글자 이내여야 합니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PatchMapping("/{storeId}/name")
@@ -328,8 +328,8 @@ public class AdminStoreController {
    */
   @Operation(summary = "[관리자] 특정 가게 주인 변경하기)",
       description = """
-          storeId(필수): 가게 고유 식별 번호
-          userEmail(필수): 이메일 형식에 맞는 주소이여야 합니다.
+          storeId(필수): 가게 고유 식별 번호 \n
+          userEmail(필수): 이메일 형식에 맞는 주소이여야 합니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PatchMapping("/{storeId}/owner")
@@ -350,8 +350,8 @@ public class AdminStoreController {
    */
   @Operation(summary = "[관리자] 특정 가게 전화번호 변경하기)",
       description = """
-          storeId(필수): 가게 고유 식별 번호
-          phone(필수): 가게 전화번호는 숫자와 '-' 기호만 입력 가능합니다.
+          storeId(필수): 가게 고유 식별 번호 \n
+          phone(필수): 가게 전화번호는 숫자와 '-' 기호만 입력 가능합니다. \n
           """)
   @PreAuthorize("hasRole('MASTER')")
   @PatchMapping("/{storeId}/phone")
