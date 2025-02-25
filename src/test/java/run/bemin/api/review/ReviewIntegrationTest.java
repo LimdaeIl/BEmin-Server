@@ -124,12 +124,13 @@ public class ReviewIntegrationTest {
     log.info("JWT Token: {}", authToken);
 
     // ReviewCreateRequestDto 준비
-    ReviewCreateRequestDto requestDto = new ReviewCreateRequestDto();
-    requestDto.setOrderId(testOrder.getOrderId().toString());
-    requestDto.setStoreId(testStore.getId().toString());
-    requestDto.setPaymentId(testPayment.getPaymentId().toString());
-    requestDto.setDescription("Delicious food!");
-    requestDto.setReviewRating(5);
+    ReviewCreateRequestDto requestDto = new ReviewCreateRequestDto(
+        testPayment.getPaymentId().toString(),
+        testOrder.getOrderId().toString(),
+        testStore.getId().toString(),
+        5,
+        "Delicious food!"
+    );
 
     log.info("=== Review Request Information ===");
     log.info("Order ID: {}", requestDto.getOrderId());
@@ -140,7 +141,7 @@ public class ReviewIntegrationTest {
     log.info("==================================");
 
     // 리뷰 생성 호출 – 실제 RabbitMQ로 이벤트 전송됨
-    ReviewCreateResponseDto responseDto = reviewService.createReview(authToken, requestDto);
+    ReviewCreateResponseDto responseDto = reviewService.createReview(testUser, requestDto);
     assertNotNull(responseDto, "리뷰 생성 응답은 null 이 아니어야 합니다.");
 
     log.info("=== Created Review Details ===");
