@@ -28,10 +28,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import run.bemin.api.auth.dto.SigninRequestDto;
 import run.bemin.api.auth.dto.TokenDto;
-import run.bemin.api.auth.jwt.JwtUtil;
+import run.bemin.api.auth.dto.request.SigninRequestDto;
 import run.bemin.api.auth.service.AuthService;
+import run.bemin.api.auth.util.JwtUtil;
 import run.bemin.api.config.MockConfig;
 import run.bemin.api.config.TestSecurityConfig;
 import run.bemin.api.config.WebSecurityConfig;
@@ -41,7 +41,7 @@ import run.bemin.api.user.entity.UserRoleEnum;
 
 
 @WebMvcTest(
-    controllers = AuthSessionController.class,
+    controllers = SessionController.class,
     excludeFilters = {
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
@@ -50,7 +50,7 @@ import run.bemin.api.user.entity.UserRoleEnum;
     }
 )
 @Import({MockConfig.class, TestSecurityConfig.class})
-class AuthSessionControllerTest {
+class SessionControllerTest {
 
   @Autowired
   private WebApplicationContext context;
@@ -188,7 +188,7 @@ class AuthSessionControllerTest {
 
     when(jwtUtil.getTokenFromHeader(eq(JwtUtil.AUTHORIZATION_HEADER), any(HttpServletRequest.class)))
         .thenReturn("someAccessToken");
-    
+
     doNothing().when(authService).signout("someAccessToken", "test@gmail.com");
 
     // When & Then

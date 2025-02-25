@@ -1,4 +1,4 @@
-package run.bemin.api.auth.jwt;
+package run.bemin.api.auth.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

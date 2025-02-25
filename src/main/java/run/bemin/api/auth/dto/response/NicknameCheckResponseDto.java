@@ -1,4 +1,4 @@
-package run.bemin.api.auth.dto;
+package run.bemin.api.auth.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

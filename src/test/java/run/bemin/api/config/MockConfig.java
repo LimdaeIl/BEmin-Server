@@ -4,8 +4,8 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;
-import run.bemin.api.auth.jwt.JwtUtil;
 import run.bemin.api.auth.service.AuthService;
+import run.bemin.api.auth.util.JwtUtil;
 import run.bemin.api.user.service.UserAddressService;
 import run.bemin.api.user.service.UserService;
 
