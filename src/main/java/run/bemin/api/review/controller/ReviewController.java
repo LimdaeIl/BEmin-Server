@@ -1,5 +1,6 @@
 package run.bemin.api.review.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,7 @@ public class ReviewController {
 
   // 특정 Store의 리뷰 페이징 조회
   @GetMapping("/reviews/{storeId}")
+  @Operation(summary = "모든 리뷰 조회하기", description = "모든 리뷰에 대해 페이징 조회하기")
   public ResponseEntity<ApiResponse<PagedReviewResponseDto>> getPagedReviewsByStore(
       @PathVariable UUID storeId,
       @RequestParam(defaultValue = "0") int page,
@@ -67,7 +69,8 @@ public class ReviewController {
 
   // 가게 주인만 리뷰 전체 목록 페이징 조회
   @GetMapping("/auth/reviews/store/{storeId}")
-  @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')")
+  @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER') or hasRole('OWNER')")
+  @Operation(summary = "가게 주인만 확인할 수 있는 리뷰 조회", description = "가게 주인인지 검증 후, 가게에 작성된 모든 리뷰 보기")
   public ResponseEntity<ApiResponse<Page<ReviewResponseDto>>> getStoreReviews(
       @AuthenticationPrincipal UserDetailsImpl userDetails,
       @PathVariable UUID storeId,
@@ -82,6 +85,7 @@ public class ReviewController {
 
   // 리뷰 생성하기
   @PostMapping("/reviews")
+  @Operation(summary = "리뷰 생성하기", description = "배달이 완료되었는지 확인 후, 리뷰 작성하기")
   public ResponseEntity<ApiResponse<ReviewCreateResponseDto>> createReview(
       @AuthenticationPrincipal UserDetailsImpl userDetails,
       @RequestBody ReviewCreateRequestDto requestDto) {
@@ -92,11 +96,12 @@ public class ReviewController {
 
     ReviewCreateResponseDto responseDto = reviewService.createReview(user, requestDto);
 
-    return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "가게 리뷰 등록 성공", responseDto));
+    return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "리뷰 등록 성공", responseDto));
   }
 
   // 리뷰 수정하기
   @PatchMapping("/reviews/{reviewId}")
+  @Operation(summary = "리뷰 수정하기", description = "작성된 리뷰 수정하기")
   public ResponseEntity<ApiResponse<ReviewUpdateResponseDto>> updateReview(
       @AuthenticationPrincipal UserDetailsImpl userDetails,
       @PathVariable UUID reviewId,
@@ -106,11 +111,12 @@ public class ReviewController {
 
     ReviewUpdateResponseDto updatedReview = reviewService.updateReview(user, reviewId, reviewUpdateRequest);
 
-    return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "가게 리뷰 수정 성공", updatedReview));
+    return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "리뷰 수정 성공", updatedReview));
   }
 
   // 리뷰 삭제하기
   @DeleteMapping("/reviews/{reviewId}")
+  @Operation(summary = "리뷰 삭제하기", description = "작성된 리뷰 삭제하기")
   public ResponseEntity<ApiResponse<ReviewDeleteResponseDto>> deleteReview(
       @AuthenticationPrincipal UserDetailsImpl userDetails,
       @PathVariable UUID reviewId) {
@@ -118,11 +124,12 @@ public class ReviewController {
 
     ReviewDeleteResponseDto deleteReview = reviewService.deleteReview(user, reviewId);
 
-    return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "가게 리뷰 삭제 성공", deleteReview));
+    return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "리뷰 삭제 성공", deleteReview));
   }
 
   // 리뷰 평점
   @GetMapping("/review/rating/{storeId}")
+  @Operation(summary = "특정 가게의 평점 계산", description = "특정 가게의 평점 계산이 올바르게 이루어지는지 확인")
   public double getAvgRating(@PathVariable UUID storeId) {
     double avg = reviewService.getAvgRatingByStore(storeId);
     return avg;
