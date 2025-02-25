@@ -28,7 +28,7 @@ import run.bemin.api.general.response.ApiResponse;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/auth")
-@Tag(name = "회원가입", description = "사용자 회원가입 및 중복 확인 컨트롤러")
+@Tag(name = "회원가입", description = "SignupController")
 public class SignupController {
 
   private final AuthService authService;
