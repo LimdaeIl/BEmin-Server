@@ -42,7 +42,7 @@
 | ----------------- | ------------------------------------------------------------ |
 | **BE(L): 김형주** | 1️⃣Product, Comment 도메인 담당<br />2️⃣S3 연동 및 이미지 최적화<br />3️⃣OpenAI 연동 CI/CD |
 | **BE: 김선희**    | 1️⃣Payment, Review 도메인 담당<br />2️⃣RabbitMQ 메시지 큐를 사용하여 성능 최적화 |
-| **BE: 공희진**    | 1️⃣User, Auth API 설계 및 구현<br />2️⃣Spring Security+JWT 기반 인증/인가 설계 및 구현<br />3️⃣Redis 기반 토큰 블랙리스트 및  캐싱 적용 |
+| **BE: 공희진**    | 1️⃣User, Auth 도메인 담당<br />2️⃣Spring Security+JWT 기반 인증/인가 설계 및 구현<br />3️⃣Redis 기반 토큰 블랙리스트 및  캐싱 적용 |
 | **BE: 신희연**    | 1️⃣Order, OderDetail 도메인 담당<br />2️⃣React, Next.js , BootStrap을 활용한 프론트엔드 개발 |
 | **BE: 임대일**    | 1️⃣Category, Service 도메인 담당                               |
 
