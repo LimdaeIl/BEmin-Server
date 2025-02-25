@@ -2,6 +2,7 @@ package run.bemin.api.order.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import run.bemin.api.security.UserDetailsImpl;
 @RequiredArgsConstructor
 @RequestMapping("/api/master-orders")
 @PreAuthorize("hasRole('MANANGER') or hasRole('MASTER')")
+@Tag(name = "주문(MASTER, MANAGER)", description = "MasterOrderController")
 public class MasterOrderController {
 
   private final OrderMasterService orderMasterService;

@@ -2,6 +2,7 @@ package run.bemin.api.order.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,7 @@ import run.bemin.api.user.service.UserService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/orders")
+@Tag(name = "주문(CUSTOMER)", description = "OrderController")
 public class OrderController {
 
   private final OrderService orderService;

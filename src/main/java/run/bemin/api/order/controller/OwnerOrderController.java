@@ -2,6 +2,7 @@ package run.bemin.api.order.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ import run.bemin.api.store.service.StoreService;
 @RequiredArgsConstructor
 @RequestMapping("/api/owner-orders")
 @PreAuthorize("hasRole('OWNER')")
+@Tag(name = "주문(OWNER)", description = "OwnerOrderController")
 public class OwnerOrderController {
 
   private final OrderOwnerService orderOwnerService;
