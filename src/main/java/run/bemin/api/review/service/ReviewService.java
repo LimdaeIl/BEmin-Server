@@ -143,9 +143,11 @@ public class ReviewService {
         .order(order)
         .store(store)
         .user(user)
-        .reviewRating(requestDto.toReviewRating())
+        .rating(requestDto.toReviewRating())
         .description(requestDto.getDescription())
         .build();
+
+
 
     reviewRepository.save(review);
 
