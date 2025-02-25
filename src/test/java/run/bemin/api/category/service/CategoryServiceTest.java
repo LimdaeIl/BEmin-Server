@@ -64,7 +64,7 @@ public class CategoryServiceTest {
     when(userRepository.existsByUserEmail("test@example.com")).thenReturn(true);
 
     // 2. Category.create()를 통해 생성된 카테고리를 저장했다고 가정
-    Category savedCategory = Category.create("Test Category", "test@example.com");
+    Category savedCategory = Category.create("Test Category");
     when(categoryRepository.save(any(Category.class))).thenReturn(savedCategory);
 
     // When: 서비스 메서드 호출
@@ -111,7 +111,7 @@ public class CategoryServiceTest {
     when(categoryRepository.existsCategoryByName(updateRequest.name())).thenReturn(false);
 
     // 2. 기존 카테고리를 조회하고 업데이트 후 저장한다고 가정
-    Category existingCategory = Category.create("Old Category", "creator@example.com");
+    Category existingCategory = Category.create("Old Category");
     when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
     when(categoryRepository.save(existingCategory)).thenReturn(existingCategory);
 
@@ -153,7 +153,7 @@ public class CategoryServiceTest {
     UserDetailsImpl userDetails = mock(UserDetailsImpl.class);
     when(userDetails.getUsername()).thenReturn("test@example.com");
 
-    Category existingCategory = Category.create("Test Category", "creator@example.com");
+    Category existingCategory = Category.create("Test Category");
     when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
     when(categoryRepository.save(existingCategory)).thenReturn(existingCategory);
 
@@ -182,8 +182,8 @@ public class CategoryServiceTest {
     when(categoryRepository.findNamesIn(anyList())).thenReturn(new ArrayList<>());
 
     // 각 카테고리 생성 후 저장
-    Category cat1 = Category.create("Category1", "test@example.com");
-    Category cat2 = Category.create("Category2", "test@example.com");
+    Category cat1 = Category.create("Category1");
+    Category cat2 = Category.create("Category2");
     List<Category> savedCategories = List.of(cat1, cat2);
     when(categoryRepository.saveAll(anyList())).thenReturn(savedCategories);
 
@@ -203,7 +203,7 @@ public class CategoryServiceTest {
     String searchName = "Test";
     int page = 0;
     int size = 10;
-    Category category = Category.create("Test Category", "creator@example.com");
+    Category category = Category.create("Test Category");
     Page<Category> categoryPage = new PageImpl<>(List.of(category));
     when(categoryRepository.findAllByNameContainingIgnoreCase(eq(searchName), any(Pageable.class)))
         .thenReturn(categoryPage.map(c -> c));

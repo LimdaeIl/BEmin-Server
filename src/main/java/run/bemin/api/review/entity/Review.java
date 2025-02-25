@@ -87,13 +87,14 @@ public class Review extends AuditableEntity {
   }
 
   @Builder
-  public Review(Payment payment, Order order, Store store, User user, ReviewRating reviewRating, String description) {
+  public Review(Payment payment, Order order, Store store, User user, ReviewRating rating, String description) {
     this.payment = payment;
     this.order = order;
     this.store = store;
     this.user = user;
-    this.rating = reviewRating;
+    this.rating = rating; // 이제 rating 파라미터로 할당
     this.description = description;
     this.status = ReviewStatus.ACTIVE;
   }
+
 }
