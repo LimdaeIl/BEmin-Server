@@ -15,11 +15,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import run.bemin.api.auth.dto.EmailCheckResponseDto;
-import run.bemin.api.auth.dto.NicknameCheckResponseDto;
-import run.bemin.api.auth.dto.SignupRequestDto;
-import run.bemin.api.auth.dto.SignupResponseDto;
 import run.bemin.api.auth.dto.TokenDto;
+import run.bemin.api.auth.dto.request.SignupRequestDto;
+import run.bemin.api.auth.dto.response.EmailCheckResponseDto;
+import run.bemin.api.auth.dto.response.NicknameCheckResponseDto;
+import run.bemin.api.auth.dto.response.SignupResponseDto;
 import run.bemin.api.auth.exception.RefreshTokenInvalidException;
 import run.bemin.api.auth.exception.RefreshTokenMismatchException;
 import run.bemin.api.auth.exception.SigninUnauthorizedException;
@@ -27,8 +27,8 @@ import run.bemin.api.auth.exception.SignupDuplicateEmailException;
 import run.bemin.api.auth.exception.SignupDuplicateNicknameException;
 import run.bemin.api.auth.exception.SignupInvalidEmailFormatException;
 import run.bemin.api.auth.exception.SignupInvalidNicknameFormatException;
-import run.bemin.api.auth.jwt.JwtUtil;
 import run.bemin.api.auth.repository.AuthRepository;
+import run.bemin.api.auth.util.JwtUtil;
 import run.bemin.api.general.exception.ErrorCode;
 import run.bemin.api.security.UserDetailsImpl;
 import run.bemin.api.user.dto.UserAddressDto;
@@ -166,14 +166,14 @@ public class AuthService {
     String accessToken = jwtUtil.createAccessToken(userEmail, role);
     String refreshToken = jwtUtil.createRefreshToken(userEmail);
 
-    TokenDto tokenDto = new TokenDto(
+    User user = authRepository.findByUserEmail(userEmail)
+        .orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
+    TokenDto tokenDto = TokenDto.fromEntity(
+        user,
         accessToken,
         refreshToken,
         jwtUtil.getAccessTokenExpiration(),
-        jwtUtil.getRefreshTokenExpiration(),
-        userEmail,
-        userDetails.getNickname(),
-        role
+        jwtUtil.getRefreshTokenExpiration()
     );
 
     // Redis에 Refresh Token 저장
@@ -213,14 +213,12 @@ public class AuthService {
     redisTemplate.opsForValue()
         .set("RT:" + userEmail, newRefreshToken, jwtUtil.getRefreshTokenExpiration(), TimeUnit.MILLISECONDS);
 
-    return new TokenDto(
+    return TokenDto.fromEntity(
+        user,
         newAccessToken,
         newRefreshToken,
         jwtUtil.getAccessTokenExpiration(),
-        jwtUtil.getRefreshTokenExpiration(),
-        userEmail,
-        user.getNickname(),
-        user.getRole()
+        jwtUtil.getRefreshTokenExpiration()
     );
   }
 

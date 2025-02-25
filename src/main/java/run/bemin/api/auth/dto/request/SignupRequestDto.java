@@ -1,4 +1,4 @@
-package run.bemin.api.auth.dto;
+package run.bemin.api.auth.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -46,9 +46,6 @@ public class SignupRequestDto {
   @NotBlank(message = "전화번호를 입력해주세요.")
   private String phone;
 
-  // 대표 주소를 User 테이블에 저장할 간단한 문자열(예: 도로명주소)
-  // 하지만 여기서는 AddressDto를 통해 상세주소 정보를 전달합니다.
-  // 대표주소는 나중에 AddressDto의 roadAddress 값을 User.address에 설정합니다.
   @NotNull(message = "주소 정보를 입력해주세요.")
   private UserAddressDto address;
 

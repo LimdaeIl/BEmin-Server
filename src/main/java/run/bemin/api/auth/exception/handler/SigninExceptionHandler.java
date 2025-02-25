@@ -14,14 +14,14 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import run.bemin.api.auth.controller.AuthSessionController;
+import run.bemin.api.auth.controller.SessionController;
 import run.bemin.api.auth.exception.SigninInvalidCredentialsException;
 import run.bemin.api.auth.exception.SigninUnauthorizedException;
 import run.bemin.api.general.exception.ErrorResponse;
 
 @Order(1)
 @Slf4j
-@RestControllerAdvice(assignableTypes = AuthSessionController.class)
+@RestControllerAdvice(assignableTypes = SessionController.class)
 public class SigninExceptionHandler {
 
   @ExceptionHandler(SigninUnauthorizedException.class)

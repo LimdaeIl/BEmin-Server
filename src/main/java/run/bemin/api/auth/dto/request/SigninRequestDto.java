@@ -1,4 +1,4 @@
-package run.bemin.api.auth.dto;
+package run.bemin.api.auth.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

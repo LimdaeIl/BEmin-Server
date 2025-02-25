@@ -1,35 +1,36 @@
 package run.bemin.api.auth.controller;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import run.bemin.api.auth.dto.RefreshResponseDto;
-import run.bemin.api.auth.dto.SigninRequestDto;
-import run.bemin.api.auth.dto.SigninResponseDto;
-import run.bemin.api.auth.dto.SignoutResponseDto;
 import run.bemin.api.auth.dto.TokenDto;
+import run.bemin.api.auth.dto.request.SigninRequestDto;
+import run.bemin.api.auth.dto.response.RefreshResponseDto;
+import run.bemin.api.auth.dto.response.SigninResponseDto;
+import run.bemin.api.auth.dto.response.SignoutResponseDto;
 import run.bemin.api.auth.exception.RefreshTokenMissingException;
-import run.bemin.api.auth.jwt.JwtUtil;
 import run.bemin.api.auth.service.AuthService;
+import run.bemin.api.auth.util.CookieUtil;
+import run.bemin.api.auth.util.JwtUtil;
+import run.bemin.api.auth.util.ResponseBuilder;
 import run.bemin.api.general.exception.ErrorCode;
 import run.bemin.api.general.response.ApiResponse;
 import run.bemin.api.security.UserDetailsImpl;
+
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/auth")
-public class AuthSessionController {
+public class SessionController {
 
   private final AuthService authService;
   private final JwtUtil jwtUtil;
@@ -43,8 +44,7 @@ public class AuthSessionController {
       HttpServletResponse res) {
 
     TokenDto tokenDto = authService.signin(requestDto.getUserEmail(), requestDto.getPassword());
-    // Refresh 토큰 쿠키 설정
-    addRefreshCookie(res, tokenDto.getRefreshToken());
+    CookieUtil.addRefreshCookie(res, tokenDto.getRefreshToken(), jwtUtil);
 
     SigninResponseDto responseDto = new SigninResponseDto(
         tokenDto.getAccessToken(),
@@ -52,11 +52,9 @@ public class AuthSessionController {
         tokenDto.getNickname(),
         tokenDto.getRole()
     );
+    log.info("로그인 요청: userEmail={}", requestDto.getUserEmail());
 
-    log.info("로그인 요청 = {}", requestDto);
-    return ResponseEntity.ok()
-        .header(JwtUtil.AUTHORIZATION_HEADER, responseDto.getAccessToken())
-        .body(ApiResponse.from(HttpStatus.OK, "성공", responseDto));
+    return ResponseBuilder.buildResponse(responseDto.getAccessToken(), "성공", responseDto, JwtUtil.AUTHORIZATION_HEADER);
   }
 
   /**
@@ -67,13 +65,12 @@ public class AuthSessionController {
       HttpServletRequest req,
       HttpServletResponse res) {
 
-    String refreshToken = extractRefreshToken(req);
+    String refreshToken = CookieUtil.getRefreshTokenFromCookies(req);
     if (refreshToken == null) {
       throw new RefreshTokenMissingException(ErrorCode.AUTH_REFRESH_TOKEN_MISSING.getMessage());
     }
-
-    TokenDto tokenDto = authService.refresh("Bearer " + refreshToken);
-    addRefreshCookie(res, tokenDto.getRefreshToken());
+    TokenDto tokenDto = authService.refresh(JwtUtil.BEARER_PREFIX + refreshToken);
+    CookieUtil.addRefreshCookie(res, tokenDto.getRefreshToken(), jwtUtil);
 
     RefreshResponseDto refreshResponse = new RefreshResponseDto(
         tokenDto.getAccessToken(),
@@ -82,9 +79,8 @@ public class AuthSessionController {
         tokenDto.getRole()
     );
 
-    return ResponseEntity.ok()
-        .header(JwtUtil.AUTHORIZATION_HEADER, refreshResponse.getAccessToken())
-        .body(ApiResponse.from(HttpStatus.OK, "토큰 갱신 성공", refreshResponse));
+    return ResponseBuilder.buildResponse(refreshResponse.getAccessToken(), "토큰 갱신 성공", refreshResponse,
+        JwtUtil.AUTHORIZATION_HEADER);
   }
 
   /**
@@ -100,37 +96,6 @@ public class AuthSessionController {
     authService.signout(accessToken, userEmail);
 
     SignoutResponseDto signoutResponse = new SignoutResponseDto(userEmail, "로그아웃 성공");
-    return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "로그아웃 성공", signoutResponse));
-  }
-
-  /**
-   * Refresh 토큰을 쿠키에 설정하는 메서드
-   */
-  private void addRefreshCookie(HttpServletResponse res, String rawRefreshToken) {
-    String token = rawRefreshToken;
-    if (rawRefreshToken != null && rawRefreshToken.startsWith(JwtUtil.BEARER_PREFIX)) {
-      token = rawRefreshToken.substring(JwtUtil.BEARER_PREFIX.length());
-    }
-    Cookie refreshCookie = new Cookie("refresh", token);
-    refreshCookie.setHttpOnly(true);
-    refreshCookie.setPath("/");
-    refreshCookie.setMaxAge((int) (jwtUtil.getRefreshTokenExpiration() / 1000));
-    // 필요시 Secure 옵션 등 추가 가능
-    refreshCookie.setSecure(true);
-    res.addCookie(refreshCookie);
-  }
-
-  /**
-   * 요청 쿠키에서 Refresh 토큰을 추출하는 메서드
-   */
-  private String extractRefreshToken(HttpServletRequest req) {
-    if (req.getCookies() != null) {
-      for (Cookie cookie : req.getCookies()) {
-        if ("refresh".equals(cookie.getName())) {
-          return cookie.getValue();
-        }
-      }
-    }
-    return null;
+    return ResponseBuilder.buildResponse(null, "로그아웃 성공", signoutResponse, JwtUtil.AUTHORIZATION_HEADER);
   }
 }
