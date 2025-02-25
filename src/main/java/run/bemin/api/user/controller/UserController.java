@@ -41,7 +41,7 @@ import run.bemin.api.user.service.UserService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
-@Tag(name = "사용자", description = "사용자 관리 및 정보 조회/수정 컨트롤러")
+@Tag(name = "사용자", description = "UserController")
 public class UserController {
   private final UserService userService;
   private final UserAddressService userAddressService;

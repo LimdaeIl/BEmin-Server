@@ -107,7 +107,7 @@ public class SessionController {
    * @return 로그아웃 결과 메시지와 사용자 정보를 반환합니다.
    */
   @PostMapping("/signout")
-  @Operation(summary = "로그아웃", description = "사용자 로그아웃을 수행하며, 토큰을 무효화합니다.")
+  @Operation(summary = "로그아웃", description = "SessionController")
   public ResponseEntity<ApiResponse<SignoutResponseDto>> logout(
       @AuthenticationPrincipal UserDetailsImpl userDetails,
       HttpServletRequest req) {
