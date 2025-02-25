@@ -8,7 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import run.bemin.api.auth.jwt.JwtUtil;
+import run.bemin.api.auth.util.JwtUtil;
 import run.bemin.api.general.exception.ErrorCode;
 import run.bemin.api.order.entity.Order;
 import run.bemin.api.order.entity.OrderStatus;

@@ -24,10 +24,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import run.bemin.api.auth.dto.EmailCheckResponseDto;
-import run.bemin.api.auth.dto.NicknameCheckResponseDto;
-import run.bemin.api.auth.dto.SignupRequestDto;
-import run.bemin.api.auth.dto.SignupResponseDto;
+import run.bemin.api.auth.dto.request.SignupRequestDto;
+import run.bemin.api.auth.dto.response.EmailCheckResponseDto;
+import run.bemin.api.auth.dto.response.NicknameCheckResponseDto;
+import run.bemin.api.auth.dto.response.SignupResponseDto;
 import run.bemin.api.auth.service.AuthService;
 import run.bemin.api.config.MockConfig;
 import run.bemin.api.config.TestSecurityConfig;
@@ -36,7 +36,7 @@ import run.bemin.api.user.dto.UserAddressDto;
 import run.bemin.api.user.entity.UserRoleEnum;
 
 @WebMvcTest(
-    controllers = AuthSignupController.class,
+    controllers = SignupController.class,
     excludeFilters = {
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
@@ -45,7 +45,7 @@ import run.bemin.api.user.entity.UserRoleEnum;
     }
 )
 @Import({MockConfig.class, TestSecurityConfig.class})
-class AuthSignupControllerTest {
+class SignupControllerTest {
 
   @Autowired
   private WebApplicationContext context;

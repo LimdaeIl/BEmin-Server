@@ -1,4 +1,4 @@
-package run.bemin.api.auth.dto;
+package run.bemin.api.auth.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import run.bemin.api.user.entity.UserRoleEnum;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RefreshResponseDto {
+public class SigninResponseDto {
   private String accessToken;
   private String email;
   private String nickname;

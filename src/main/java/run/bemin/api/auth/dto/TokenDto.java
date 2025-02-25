@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import run.bemin.api.user.entity.User;
 import run.bemin.api.user.entity.UserRoleEnum;
 
 @Data
@@ -19,8 +20,17 @@ public class TokenDto {
   private String email;
   private String nickname;
   private UserRoleEnum role;
-
-  public String getToken() {
-    return accessToken;
+  
+  public static TokenDto fromEntity(User user, String accessToken, String refreshToken,
+                                    long accessTokenExpiresTime, long refreshTokenExpiresTime) {
+    return new TokenDto(
+        accessToken,
+        refreshToken,
+        accessTokenExpiresTime,
+        refreshTokenExpiresTime,
+        user.getUserEmail(),
+        user.getNickname(),
+        user.getRole()
+    );
   }
 }

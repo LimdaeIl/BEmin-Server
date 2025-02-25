@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import run.bemin.api.auth.dto.EmailCheckResponseDto;
-import run.bemin.api.auth.dto.NicknameCheckResponseDto;
-import run.bemin.api.auth.dto.SignupRequestDto;
-import run.bemin.api.auth.dto.SignupResponseDto;
+import run.bemin.api.auth.dto.request.SignupRequestDto;
+import run.bemin.api.auth.dto.response.EmailCheckResponseDto;
+import run.bemin.api.auth.dto.response.NicknameCheckResponseDto;
+import run.bemin.api.auth.dto.response.SignupResponseDto;
 import run.bemin.api.auth.service.AuthService;
 import run.bemin.api.general.response.ApiResponse;
 
@@ -23,7 +23,7 @@ import run.bemin.api.general.response.ApiResponse;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/auth")
-public class AuthSignupController {
+public class SignupController {
 
   private final AuthService authService;
 

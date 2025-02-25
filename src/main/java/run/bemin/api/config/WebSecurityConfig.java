@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import run.bemin.api.auth.jwt.JwtUtil;
+import run.bemin.api.auth.util.JwtUtil;
 import run.bemin.api.security.JwtAuthorizationFilter;
 import run.bemin.api.security.UserDetailsServiceImpl;
 
@@ -66,7 +66,8 @@ public class WebSecurityConfig {
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/api/users/email/**").permitAll()
             .requestMatchers("/api/users/nickname/**").permitAll()
-            .requestMatchers("/favicon.ico", "/swagger", "/v3/api-docs/**", "/api-docs/**" ,"/swagger-ui/**", "/swagger-resources/**").permitAll() // 문서화
+            .requestMatchers("/favicon.ico", "/swagger", "/v3/api-docs/**", "/api-docs/**", "/swagger-ui/**",
+                "/swagger-resources/**").permitAll() // 문서화
             .requestMatchers("/api/**").permitAll()
             .anyRequest().authenticated() // 그 외 모든 요청 인증처리
     );
