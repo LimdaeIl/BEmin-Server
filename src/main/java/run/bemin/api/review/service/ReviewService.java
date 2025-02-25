@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import run.bemin.api.general.exception.ErrorCode;
@@ -92,6 +93,23 @@ public class ReviewService {
     return orderStatus == OrderStatus.DELIVERY_COMPLETED ||
         orderStatus == OrderStatus.TAKEOUT_COMPLETED ||
         orderStatus == OrderStatus.TAKEOUT_HANDOVER_COMPLETED;
+  }
+
+  // 특정 가게 주인이 가게의 리뷰를 모두 보고 싶을 때
+  @PreAuthorize("hasRole('MANANGER') or hasRole('MASTER') or hasRole('OWNER')")
+  public Page<ReviewResponseDto> getStoreReviews(User user, UUID storeId, Pageable pageable) {
+    // 가게 존재 여부 확인
+    Store store = storeRepository.findById(storeId)
+        .orElseThrow(() -> new ReviewException(ErrorCode.STORE_NOT_FOUND));
+
+    // 주인 검증
+    if (!store.getOwner().getUserEmail().equals(user.getUserEmail())) {
+      throw new ReviewException(ErrorCode.STORE_ACCESS_DENIED);
+    }
+
+    // 리뷰 조회 및 반환 (페이징 처리)
+    return reviewRepository.findByStoreId(storeId, pageable)
+        .map(ReviewResponseDto::from);
   }
 
   // 리뷰 생성
