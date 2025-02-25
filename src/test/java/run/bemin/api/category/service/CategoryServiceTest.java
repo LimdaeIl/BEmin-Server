@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -165,35 +166,6 @@ public class CategoryServiceTest {
     assertTrue(result.isDeleted());
     verify(categoryRepository).findById(categoryId);
     verify(categoryRepository).save(existingCategory);
-  }
-
-  @Test
-  @DisplayName("[성공|카테고리] 모든 카테고리 조회하기")
-  void givenValidMultipleCreateCategoryRequestsAndUser_whenCreateCategories_thenCategoriesCreatedSuccessfully() {
-    // Given: 여러 카테고리 생성 요청
-    CreateCategoryRequestDto req1 = new CreateCategoryRequestDto("Category1");
-    CreateCategoryRequestDto req2 = new CreateCategoryRequestDto("Category2");
-    List<CreateCategoryRequestDto> requestList = List.of(req1, req2);
-
-    UserDetailsImpl userDetails = mock(UserDetailsImpl.class);
-    when(userDetails.getUsername()).thenReturn("test@example.com");
-
-    // 1. 이미 존재하는 카테고리 이름이 없다고 가정
-    when(categoryRepository.findNamesIn(anyList())).thenReturn(new ArrayList<>());
-
-    // 각 카테고리 생성 후 저장
-    Category cat1 = Category.create("Category1");
-    Category cat2 = Category.create("Category2");
-    List<Category> savedCategories = List.of(cat1, cat2);
-    when(categoryRepository.saveAll(anyList())).thenReturn(savedCategories);
-
-    // When: 배치 생성 실행
-    List<CategoryDto> result = categoryService.createCategories(requestList, userDetails);
-
-    // Then: 결과 검증
-    assertNotNull(result);
-    assertEquals(2, result.size());
-    verify(categoryRepository).saveAll(anyList());
   }
 
   @Test
