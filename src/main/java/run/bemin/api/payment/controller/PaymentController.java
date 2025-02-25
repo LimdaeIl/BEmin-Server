@@ -1,5 +1,6 @@
 package run.bemin.api.payment.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -28,14 +29,14 @@ import run.bemin.api.user.service.UserService;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Tag(name = "결제", description = "PaymentController")
 public class PaymentController {
 
   private final PaymentService paymentService;
   private final UserService userService;
 
   @GetMapping("/payments/status")
-  public ResponseEntity<ApiResponse<PaymentStatusResponseDto>> getPaymentStatus(
-      @RequestParam UUID paymentId) {
+  public ResponseEntity<ApiResponse<PaymentStatusResponseDto>> getPaymentStatus(@RequestParam UUID paymentId) {
     PaymentStatusResponseDto response = paymentService.getPaymentStatus(paymentId);
 
     return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "성공", response));

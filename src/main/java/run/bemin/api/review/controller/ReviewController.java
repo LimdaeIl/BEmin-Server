@@ -1,13 +1,19 @@
 package run.bemin.api.review.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -22,15 +28,22 @@ import run.bemin.api.review.dto.PagedReviewResponseDto;
 import run.bemin.api.review.dto.ReviewCreateRequestDto;
 import run.bemin.api.review.dto.ReviewCreateResponseDto;
 import run.bemin.api.review.dto.ReviewDeleteResponseDto;
+import run.bemin.api.review.dto.ReviewResponseDto;
 import run.bemin.api.review.dto.ReviewUpdateRequestDto;
 import run.bemin.api.review.dto.ReviewUpdateResponseDto;
 import run.bemin.api.review.service.ReviewService;
+import run.bemin.api.security.UserDetailsImpl;
+import run.bemin.api.user.entity.User;
+import run.bemin.api.user.service.UserService;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Tag(name = "리뷰", description = "ReviewController")
 public class ReviewController {
   private final ReviewService reviewService;
+  private final UserService userService;
 
   // 특정 Store의 리뷰 페이징 조회
   @GetMapping("/reviews/{storeId}")
@@ -52,41 +65,60 @@ public class ReviewController {
     return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "성공", responseDto));
   }
 
+  // 가게 주인만 리뷰 전체 목록 페이징 조회
+  @GetMapping("/auth/reviews/store/{storeId}")
+  @PreAuthorize("hasRole('MANAGER') or hasRole('MASTER')")
+  public ResponseEntity<ApiResponse<Page<ReviewResponseDto>>> getStoreReviews(
+      @AuthenticationPrincipal UserDetailsImpl userDetails,
+      @PathVariable UUID storeId,
+      @PageableDefault(size = 10, sort = "createdAt", direction = Direction.DESC) Pageable pageable
+  ) {
+    User user = userService.findByUserEmail(userDetails.getUsername());
+
+    Page<ReviewResponseDto> storeReviews = reviewService.getStoreReviews(user, storeId, pageable);
+
+    return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "가게 리뷰 조회 성공", storeReviews));
+  }
+
   // 리뷰 생성하기
   @PostMapping("/reviews")
-  public ResponseEntity<ReviewCreateResponseDto> createReview(
-      HttpServletRequest request,
+  public ResponseEntity<ApiResponse<ReviewCreateResponseDto>> createReview(
+      @AuthenticationPrincipal UserDetailsImpl userDetails,
       @RequestBody ReviewCreateRequestDto requestDto) {
 
-    String authToken = request.getHeader("Authorization");
+    User user = userService.findByUserEmail(userDetails.getUsername());
 
-    ReviewCreateResponseDto responseDto = reviewService.createReview(authToken, requestDto);
+    log.info("Controller 에서 user : {}", user.getUserEmail());
 
-    return ResponseEntity.ok(responseDto);
+    ReviewCreateResponseDto responseDto = reviewService.createReview(user, requestDto);
+
+    return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "가게 리뷰 등록 성공", responseDto));
   }
 
   // 리뷰 수정하기
   @PatchMapping("/reviews/{reviewId}")
-  public ResponseEntity<ReviewUpdateResponseDto> updateReview(
-      HttpServletRequest request,
+  public ResponseEntity<ApiResponse<ReviewUpdateResponseDto>> updateReview(
+      @AuthenticationPrincipal UserDetailsImpl userDetails,
       @PathVariable UUID reviewId,
       @RequestBody ReviewUpdateRequestDto reviewUpdateRequest
   ) {
-    String authToken = request.getHeader("Authorization");
+    User user = userService.findByUserEmail(userDetails.getUsername());
 
-    ReviewUpdateResponseDto updatedReview = reviewService.updateReview(authToken, reviewId, reviewUpdateRequest);
+    ReviewUpdateResponseDto updatedReview = reviewService.updateReview(user, reviewId, reviewUpdateRequest);
 
-    return ResponseEntity.ok(updatedReview);
+    return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "가게 리뷰 수정 성공", updatedReview));
   }
 
   // 리뷰 삭제하기
   @DeleteMapping("/reviews/{reviewId}")
-  public ResponseEntity<ReviewDeleteResponseDto> deleteReview(HttpServletRequest request, @PathVariable UUID reviewId) {
-    String authToken = request.getHeader("Authorization");
+  public ResponseEntity<ApiResponse<ReviewDeleteResponseDto>> deleteReview(
+      @AuthenticationPrincipal UserDetailsImpl userDetails,
+      @PathVariable UUID reviewId) {
+    User user = userService.findByUserEmail(userDetails.getUsername());
 
-    ReviewDeleteResponseDto deleteReview = reviewService.deleteReview(authToken, reviewId);
+    ReviewDeleteResponseDto deleteReview = reviewService.deleteReview(user, reviewId);
 
-    return ResponseEntity.ok(deleteReview);
+    return ResponseEntity.ok(ApiResponse.from(HttpStatus.OK, "가게 리뷰 삭제 성공", deleteReview));
   }
 
   // 리뷰 평점

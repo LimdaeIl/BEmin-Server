@@ -13,6 +13,18 @@ public class ReviewCreateRequestDto {
   private int reviewRating;
   private String description;
 
+  public ReviewCreateRequestDto(String paymentId,
+                                String orderId,
+                                String storeId,
+                                int reviewRating,
+                                String description) {
+    this.paymentId = paymentId;
+    this.orderId = orderId;
+    this.storeId = storeId;
+    this.reviewRating = reviewRating;
+    this.description = description;
+  }
+
   public ReviewRating toReviewRating() {
     return ReviewRating.fromValue(reviewRating);
   }
