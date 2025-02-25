@@ -5,6 +5,8 @@ import static run.bemin.api.category.dto.CategoryResponseCode.CATEGORY_CREATED;
 import static run.bemin.api.category.dto.CategoryResponseCode.CATEGORY_DELETED;
 import static run.bemin.api.category.dto.CategoryResponseCode.CATEGORY_UPDATED;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,10 @@ import run.bemin.api.category.service.CategoryService;
 import run.bemin.api.general.response.ApiResponse;
 import run.bemin.api.security.UserDetailsImpl;
 
+/**
+ * The type Admin category controller.
+ */
+@Tag(name = "[관리자]카테고리", description = "AdminCategoryController")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/categories")
 @RestController
@@ -35,7 +41,18 @@ public class AdminCategoryController {
 
   private final CategoryService categoryService;
 
-  // 단 건 카테고리 생성하기
+
+  /**
+   * Create category response entity.
+   *
+   * @param requestDto  the request dto
+   * @param userDetails the user details
+   * @return the response entity
+   */
+  @Operation(summary = "[관리자] 단 건 카테고리 등록하기",
+      description = """
+          name(필수) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다.
+          """)
   @PreAuthorize("hasRole('MASTER')")
   @PostMapping
   public ResponseEntity<ApiResponse<CategoryDto>> createCategory(
@@ -47,6 +64,17 @@ public class AdminCategoryController {
         .body(ApiResponse.from(CATEGORY_CREATED.getStatus(), CATEGORY_CREATED.getMessage(), categoryDto));
   }
 
+  /**
+   * Create categories response entity.
+   *
+   * @param requestDtoList the request dto list
+   * @param userDetails    the user details
+   * @return the response entity
+   */
+  @Operation(summary = "[관리자] 두 개 이상의 카테고리 등록하기",
+      description = """
+          name(필수) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다.
+          """)
   @PreAuthorize("hasRole('MASTER')")
   @PostMapping("/batch")
   public ResponseEntity<ApiResponse<List<CategoryDto>>> createCategories(
@@ -59,6 +87,20 @@ public class AdminCategoryController {
         .body(ApiResponse.from(CATEGORY_CREATED.getStatus(), CATEGORY_CREATED.getMessage(), categories));
   }
 
+  /**
+   * Gets admin categories.
+   *
+   * @param name the name
+   * @param page the page
+   * @param size the size
+   * @return the admin categories
+   */
+  @Operation(summary = "[관리자] 카테고리 조회하기(삭제 포함)",
+      description = """
+          name(선택) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다. \n
+          page(선택) : 조회할 페이지 번호(defaultValue = 0) \n
+          size(선택) : 한 페이지에 포함될 항목 수(defaultValue = 10)
+          """)
   @PreAuthorize("hasRole('MASTER')")
   @GetMapping
   public ResponseEntity<ApiResponse<Page<CategoryDto>>> getAdminCategories(
@@ -77,6 +119,19 @@ public class AdminCategoryController {
     );
   }
 
+  /**
+   * Update category response entity.
+   *
+   * @param categoryId  the category id
+   * @param requestDto  the request dto
+   * @param userDetails the user details
+   * @return the response entity
+   */
+  @Operation(summary = "[관리자] 카테고리 수정하기",
+      description = """
+          name(필수) : 카테고리 이름은 한글, 숫자, 특수 문자(·, !), 공백만 입력 가능하며, 1~16글자 이내여야 합니다. \n
+          isDeleted(필수) : 카테고리 삭제 여부 입니다.
+          """)
   @PreAuthorize("hasRole('MASTER')")
   @PatchMapping("/{categoryId}")
   public ResponseEntity<ApiResponse<CategoryDto>> updateCategory(
@@ -90,6 +145,17 @@ public class AdminCategoryController {
         .body(ApiResponse.from(CATEGORY_UPDATED.getStatus(), CATEGORY_UPDATED.getMessage(), categoryDto));
   }
 
+  /**
+   * Soft delete category response entity.
+   *
+   * @param categoryId  the category id
+   * @param userDetails the user details
+   * @return the response entity
+   */
+  @Operation(summary = "[관리자] 카테고리 삭제하기",
+      description = """
+          categoryId(필수) : 삭제할 카테고리 고유 식별 번호
+          """)
   @PreAuthorize("hasRole('MASTER')")
   @DeleteMapping("/{categoryId}")
   public ResponseEntity<ApiResponse<CategoryDto>> softDeleteCategory(
